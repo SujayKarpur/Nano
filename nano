@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+
+def list_available_commands() -> None:
+    print("\n\navailable commands:")
+    print("SET <name> <value>")
+    print("GET <name>")
+    print("DELETE <name>")
+    print("help")
+    print("exit\n\n")
+
+
+def main():
+    print("Welcome to Nano!\n\n")
+    print("available commands:")
+    print("SET <name> <value>")
+    print("GET <name>")
+    print("DELETE <name>")
+    print("help")
+    print("exit\n\n")
+    while True:
+        try: 
+            command = input('> ') 
+            if command == 'help':
+                list_available_commands()
+            elif  command == 'exit':
+                raise EOFError
+        except EOFError:
+            print("\nExiting Nano.........")
+            break 
+ 
+
+
+if __name__ == '__main__':
+    main()

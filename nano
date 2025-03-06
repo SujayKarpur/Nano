@@ -14,25 +14,32 @@ def main():
 
     with socket(AF_INET, SOCK_STREAM) as s:
         s.bind(env.ADDRESS)
-        s.listen(1)
-        conn, addr = s.accept()
-        with conn:
-            while True:
-                command = conn.recv(1024).decode() 
-                comlist = command.split()
-                if comlist[0] == 'GET':
-                    send_msg = store.get(comlist[1]).encode()
-                    print('sending a new message ', send_msg)
-                    s.send(send_msg) 
-                elif comlist[0] == 'SET':
-                    send_msg = store.set(comlist[1], comlist[2]).encode()
-                    print('sending message')
-                    s.send(send_msg)
-                elif comlist[0] == 'DELETE':
-                    send_msg = store.delete(comlist[1]).encode()
-                    s.send(send_msg)
-                else:
-                    break 
+        s.listen(5)
+        print("Server is listening")
+        while True:
+            conn, addr = s.accept()
+            print(f"Client {addr} joined")
+            try:
+                while True: 
+                    command = conn.recv(1024).decode() 
+                    comlist = command.split()
+                    if comlist[0] == 'GET':
+                        send_msg = store.get(comlist[1]).encode()
+                        print('sending a new message ', send_msg)
+                        conn.send(send_msg) 
+                    elif comlist[0] == 'SET':
+                        send_msg = store.set(comlist[1], comlist[2]).encode()
+                        print('sending message')
+                        conn.send(send_msg)
+                    elif comlist[0] == 'DELETE':
+                        send_msg = store.delete(comlist[1]).encode()
+                        conn.send(send_msg)
+                    else:
+                        break 
+            except:
+                print(f"Client {addr} closed the connection")
+            finally:
+                conn.close()
 
                 
  

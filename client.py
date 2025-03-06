@@ -21,12 +21,14 @@ def main():
         while True: 
             command = input('> ')
             if not command: 
+                s.close()
                 break 
             if command == 'help':
                 help()
                 continue  
             elif command == 'exit':
-                break  
+                s.close()  
+                break 
             else:
                 s.send(command.encode())
                 output = s.recv(1024).decode()

@@ -1,13 +1,25 @@
 class Database:
 
-    def __init__(self, ):
-        pass 
+    def __init__(self):
+        self.db = dict() 
 
-    def set(self, key, value):
-        pass 
+    def __repr__(self) -> str:
+        return self.db.__repr__()
 
-    def get(self, key):
-        pass 
+    def set(self, key, value) -> str:
+        self.db[key] = value 
+        return f"OK. set database[{key}] = {value}"
 
-    def delete(self, key):
-        pass 
+    def get(self, key) -> str:
+        if key in self.db:
+            return self.db[key]
+        else:
+            return f"ERROR: No key {key} exists"
+        
+    def delete(self, key) -> str:
+        if key in self.db:
+            self.db.pop(key)
+            return f"OK. removed key {key}"
+        else:
+            return f"ERROR: No key {key} exists"
+    

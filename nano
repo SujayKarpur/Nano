@@ -1,33 +1,40 @@
 #!/usr/bin/env python3
 
+from socket import *
 
-def list_available_commands() -> None:
-    print("\n\navailable commands:")
-    print("SET <name> <value>")
-    print("GET <name>")
-    print("DELETE <name>")
-    print("help")
-    print("exit\n\n")
+import database 
+import env 
+
+
+
 
 
 def main():
-    print("Welcome to Nano!\n\n")
-    print("available commands:")
-    print("SET <name> <value>")
-    print("GET <name>")
-    print("DELETE <name>")
-    print("help")
-    print("exit\n\n")
-    while True:
-        try: 
-            command = input('> ') 
-            if command == 'help':
-                list_available_commands()
-            elif  command == 'exit':
-                raise EOFError
-        except EOFError:
-            print("\nExiting Nano.........")
-            break 
+    store = database.Database()
+
+    with socket(AF_INET, SOCK_STREAM) as s:
+        s.bind(env.ADDRESS)
+        s.listen(1)
+        conn, addr = s.accept()
+        with conn:
+            while True:
+                command = conn.recv(1024).decode() 
+                comlist = command.split()
+                if comlist[0] == 'GET':
+                    send_msg = store.get(comlist[1]).encode()
+                    print('sending a new message ', send_msg)
+                    s.send(send_msg) 
+                elif comlist[0] == 'SET':
+                    send_msg = store.set(comlist[1], comlist[2]).encode()
+                    print('sending message')
+                    s.send(send_msg)
+                elif comlist[0] == 'DELETE':
+                    send_msg = store.delete(comlist[1]).encode()
+                    s.send(send_msg)
+                else:
+                    break 
+
+                
  
 
 

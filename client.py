@@ -1,4 +1,5 @@
 from socket import socket, AF_INET, SOCK_STREAM
+import asyncio 
 
 import env 
 
@@ -13,28 +14,32 @@ def help() -> None:
 
 
 
-def main():
+async def main():
     print("Welcome to Nano!")
     help() 
-    with socket(AF_INET, SOCK_STREAM) as s:
-        s.connect(env.ADDRESS)
-        while True: 
-            command = input('> ')
-            if not command: 
-                s.close()
+    reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
+    while True: 
+        command = input('> ')
+        if not command: 
+            writer.close()
+            await writer.wait_closed()
+            break 
+        if command == 'help':
+            help()
+            continue  
+        elif command == 'exit':
+            writer.close()
+            await writer.wait_closed() 
+            break 
+        else:
+            writer.write(command.encode())
+            await writer.drain()
+            output = await reader.read(1024)
+            print(output.decode())
+            if not output:
                 break 
-            if command == 'help':
-                help()
-                continue  
-            elif command == 'exit':
-                s.close()  
-                break 
-            else:
-                s.send(command.encode())
-                output = s.recv(1024).decode()
-                print(output)
 
 
 
 if __name__ == '__main__':
-    main()
+    asyncio.run(main())

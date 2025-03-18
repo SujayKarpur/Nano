@@ -19,4 +19,14 @@ Nano implements a basic in-memory key-value store using python dictionaries that
 ## IV. Concurrent Client Handling
 
 
-## V. Future Improvements
+## V. Persistence
+
+## VI. LSM Trees 
+
+## VII. Security 
+
+## VIII. Rewrite in Go
+
+## IX. Distribute 
+
+## X. Future Improvements

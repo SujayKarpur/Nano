@@ -1,10 +1,16 @@
-from redblacktree import RedBlackTree
+from src.redblacktree import RedBlackTree
 
 
 class Database:
 
-    def __init__(self):
+    count: int = 0
+
+    def __init__(self, name: str):
         self.db = RedBlackTree()
+        self.name = name 
+        self.id = Database.count 
+        Database.count += 1 
+
 
     def __repr__(self) -> str:
         return self.db.__repr__()

@@ -95,13 +95,17 @@ class RedBlackTree:
             x: Node = new 
             if not self.uncle(x) or self.uncle(x).color == Color.BLACK:
                 if x.parent == self.grandparent(x).left: 
-                    self.rotate(Side.LEFT, x)
                     if x == x.parent.right:
-                        self.rotate(Side.RIGHT, x) 
+                        self.rotate(Side.LEFT, x.parent)
+                        self.rotate(Side.RIGHT, self.grandparent(x)) 
+                    else:
+                        self.rotate(Side.LEFT, self.grandparent(x))
                 else:
-                    self.rotate(Side.LEFT, self.grandparent(x))
                     if x == x.parent.left:
-                        self.rotate(Side.LEFT, x)  
+                        self.rotate(Side.RIGHT, x.parent)
+                        self.rotate(Side.LEFT, self.grandparent(x))  
+                    else:
+                        self.rotate(Side.LEFT, self.grandparent(x))
             else:
                 while x != self.root and x.parent.color != Color.BLACK:
                     x.parent.color = self.uncle(x).color = Color.BLACK 
@@ -114,7 +118,7 @@ class RedBlackTree:
 
     def __contains__(self, key: str) -> bool:
         current: Node = self.root 
-        while current and current.key != key:
+        while current:
             if current.key > key:
                 current = current.left 
             elif current.key < key:
@@ -152,12 +156,14 @@ class RedBlackTree:
     def rotate(self, side: Side, pivot: Node) -> None:
         
         if side == Side.RIGHT:
-            old_parent = pivot.parent 
-            old_right = pivot.right 
-            pivot.parent = self.grandparent(pivot)
-            pivot.right = old_parent
-            old_parent.parent = pivot 
-            old_parent.left = old_right 
+            old_parent = pivot.left 
+            pivot.left = old_parent.right  
+            pivot.parent = old_parent
+            old_parent.right = pivot 
+            
+            if pivot == self.root:
+                self.root = old_parent
+
 
         else:       
             old_parent = pivot.right 
@@ -167,6 +173,8 @@ class RedBlackTree:
 
             if pivot == self.root:
                 self.root = old_parent
+
+
 
     def traverse(self, type: TraversalType):
         match type:
@@ -180,20 +188,24 @@ class RedBlackTree:
                 return self._levelorder_traversal_helper(self.root)
     
 
+
     def _preorder_traversal_helper(self, root: Node):
         if not root:
             return [] 
         return [root] + self._preorder_traversal_helper(root.left) + self._preorder_traversal_helper(root.right)
+
 
     def _inorder_traversal_helper(self, root: Node):
         if not root:
             return []
         return self._inorder_traversal_helper(root.left) + [root] + self._inorder_traversal_helper(root.right)
 
+
     def _postorder_traversal_helper(self, root: Node):
         if not root:
             return []
         return self._postorder_traversal_helper(root.left) + self._postorder_traversal_helper(root.right) + [root] 
+
 
     def _levelorder_traversal_helper(self, root: Node):
         if not root:
@@ -215,6 +227,8 @@ class RedBlackTree:
 
         return traversal
     
+
+
 
     def __repr__(self) -> str:
         s = ""

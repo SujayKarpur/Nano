@@ -1,5 +1,5 @@
 from enum import Enum 
-from typing import Optional
+from typing import Optional, List 
 from collections import deque 
 from functools import total_ordering
 from copy import deepcopy 
@@ -49,12 +49,17 @@ class Node:
     def __lt__(self, other: 'Node'):
         return str.__lt__(self.key, other.key)
     
+    def attrcopy(self, other: 'Node') -> None:
+        self.key = other.key 
+        self.value = other.value 
+        #self.color = other.color 
+
 
 
 class RedBlackTree:
     
-    def __init__(self):
-        self.root: Node = None  
+    def __init__(self, root:Node = None):
+        self.root: Node = root   
         self.size: int = 0 
 
 
@@ -136,7 +141,7 @@ class RedBlackTree:
                 return True 
         return False  
     
-    def get(self, key: str) -> str:
+    def get(self, key: str) -> Node:
         current: Node = self.root 
         while current:
             if current.key > key:
@@ -144,33 +149,122 @@ class RedBlackTree:
             elif current.key < key:
                 current = current.right 
             else: 
-                return current.value  
+                return current  
+
+    def _bst_delete(self, root: Node, node: Node) -> Node:
+        
+        if root == None:
+            return None 
+        
+        if node > root:
+            root.right = self._bst_delete(root.right, node)
+            return root 
+
+        elif node < root:
+            root.left = self._bst_delete(root.left, node)
+            return root  
+
+        else:
+            if not root.left and not root.right:
+                return None 
+            
+            if not root.right:
+                return root.left 
+            
+            if not root.left:
+                return root.right 
+            
+            f = self._inorder_successor(root)
+            root.attrcopy(f)
+            f = self._bst_delete(f,f)
+
+            return root 
+        
+    
+    def blackblackfix(self, ):
+        pass 
+
+    def delete_helper(self, node: Node) -> None:
+        
+        if node.left and node.right:
+            succ = self._inorder_successor(node)
+            node.attrcopy(succ)
+            self.delete_helper(succ)
+
+        if node.left:
+            node.left.color = 1
+
+    def delete(self, key: str) -> None:
+
+        if key not in self: 
+            return 
+        
+        node = self.get(key)
+        self.delete_helper(node)
+        
+
+        if node.left and node.right:
+            succ = self._inorder_successor(node)
+            node.attrcopy(succ)
+            self.delete()
+
+        if not node.left and not node.right:
+            self.root = self._bst_delete(self.root, node) 
+        elif not node.right:
+            self.root = self._bst_delete(self.root, node) 
+            if node.color == Color.BLACK:
+                if node.left.color == Color.RED:
+                    node.left.color = Color.BLACK 
+                else:
+                    pass 
+        else:
+            self.root = self._bst_delete(self.root, node)
+            f = self._inorder_successor(node)
+            if node.color == Color.BLACK:
+                if f.color == Color.BLACK:
+                    pass 
+                else:
+                    f.color = Color.RED  
+        
 
 
-    def delete(self, key: str):
+        self.root.color = Color.BLACK
         self.size -= 1   
 
     #helper methods 
 
     def parent(self, node: Node) -> Maybe_node:
-        return node.parent  
+        current: Node = self.root 
+
+        if node == current:
+            return None 
+
+        while current: 
+            if (current.left and current.left == node) or (current.right and current.right == node):
+                return current 
+            if node > current:
+                current = current.right 
+            elif node < current:
+                current = current.left 
+
+        return None 
 
     def sibling(self, node: Node) -> Maybe_node:
-        if node.parent:
-            if node.parent.left and node.parent.left == node:
-                return node.parent.right 
+        if self.parent(node):
+            if self.parent(node).left and self.parent(node).left == node:
+                return self.parent(node).right 
             else:
-                return node.parent.left 
+                return self.parent(node).left 
         else:
             return None 
 
     def grandparent(self, node: Node) -> Maybe_node:
-        if node.parent:
-            return node.parent.parent 
+        if self.parent(node):
+            return self.parent(self.parent(node)) 
         return None  
 
     def uncle(self, node: Node) -> Maybe_node:
-        return self.sibling(node.parent) 
+        return self.sibling(self.parent(node)) 
 
 
     def rotate(self, side: Side, pivot: Node) -> None:
@@ -227,25 +321,25 @@ class RedBlackTree:
     
 
 
-    def _preorder_traversal_helper(self, root: Node):
+    def _preorder_traversal_helper(self, root: Node) -> List[Node]:
         if not root:
             return [] 
         return [root] + self._preorder_traversal_helper(root.left) + self._preorder_traversal_helper(root.right)
 
 
-    def _inorder_traversal_helper(self, root: Node):
+    def _inorder_traversal_helper(self, root: Node) -> List[Node]:
         if not root:
             return []
         return self._inorder_traversal_helper(root.left) + [root] + self._inorder_traversal_helper(root.right)
 
 
-    def _postorder_traversal_helper(self, root: Node):
+    def _postorder_traversal_helper(self, root: Node) -> List[Node]:
         if not root:
             return []
         return self._postorder_traversal_helper(root.left) + self._postorder_traversal_helper(root.right) + [root] 
 
 
-    def _levelorder_traversal_helper(self, root: Node):
+    def _levelorder_traversal_helper(self, root: Node) -> List[Node]:
         if not root:
             return []
         queue = [root]
@@ -274,3 +368,27 @@ class RedBlackTree:
         for x in self._levelorder_traversal_helper(self.root):
             s += ' '.join(map(str,x)) + '\n'
         return s 
+    
+
+
+    def _inorder_successor(self, node: Node) -> Node:
+        array = self._inorder_traversal_helper(self.root)
+        try:
+            i = array.index(node)
+            if i == self.size-1:
+                return None 
+            else:
+                return array[i+1]
+        except:
+            return None 
+
+    def _inorder_predecessor(self, node: Node) -> Node:
+        array = self._inorder_traversal_helper(self.root)
+        try:
+            i = array.index(node)
+            if i == 0:
+                return None 
+            else:
+                return array[i-1]
+        except:
+            return None 

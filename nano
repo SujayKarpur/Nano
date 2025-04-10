@@ -5,6 +5,7 @@ import asyncio
 
 import database 
 import env 
+import cluster 
 
 
 
@@ -30,62 +31,36 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             if comlist[0] == 'LIST':
-                send_msg = '\n'.join([s.name for s in stores]).encode()
-                writer.write(send_msg)
-                await writer.drain()
+                message = stores.list().encode()
+
 
             elif comlist[0] == 'SELECT':
-                print("hi")
-                for i in stores:
-                    if i.name == comlist[1]:
-                        store = i 
-                        send_msg = f"OK. Selected database {i.name}".encode()
-                        break 
-                else:
-                    send_msg = f"ERROR: No database {comlist[1]} exists"
-                
-                writer.write(send_msg)
-                await writer.drain()
+                message = stores.select(comlist[1]).encode()           
 
             elif comlist[0] == 'CREATE':
-                new_name = comlist[1]
-                stores.append(database.Database(new_name))
-                send_msg = f"OK. Created new database {new_name}".encode()
-                writer.write(send_msg)
-                await writer.drain()
-                print('bye,, created')
+                message = stores.create(comlist[1]).encode()
 
             elif comlist[0] == 'DROP':
-                for i in range(len(stores)):
-                    if stores[i].name == comlist[1]:
-                        stores.pop(i)
-                        send_msg = f"OK. Deleted database {comlist[1]}".encode()
-                        break 
-                else:
-                   send_msg = f"ERROR: No database {comlist[1]} exists".encode()
+                message = stores.drop(comlist[1]).encode()
 
-                writer.write(send_msg)
-                await writer.drain()
+            else:
+                if stores.current == None:
+                    message = "ERROR. No database selected".encode()
 
-            elif comlist[0] == 'GET':
-                send_msg = store.get(comlist[1]).encode()
-                print('sending a new message ', send_msg)
-                writer.write(send_msg)
-                await writer.drain()
+
+            if comlist[0] == 'GET':
+                message = stores.current.get(comlist[1]).encode()
 
             elif comlist[0] == 'SET':
-                send_msg = store.set(comlist[1], comlist[2]).encode()
-                print('sending message')
-                writer.write(send_msg)
-                await writer.drain()
+                message = stores.current.set(comlist[1], comlist[2]).encode()
 
             elif comlist[0] == 'DELETE':
-                send_msg = store.delete(comlist[1]).encode()
-                writer.write(send_msg)
-                await writer.drain()
+                message = stores.current.delete(comlist[1]).encode()
 
             else:   
                 break 
+
+            write_message(writer, message)
 
 
     except BrokenPipeError:
@@ -93,7 +68,6 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
     finally:
-        print('hi finally')
         writer.close()
         await writer.wait_closed()
 
@@ -110,5 +84,5 @@ async def main():
 
 
 if __name__ == '__main__':
-    stores = [database.Database("default")]
+    stores = cluster.Cluster()
     asyncio.run(main())

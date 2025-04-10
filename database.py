@@ -21,7 +21,7 @@ class Database:
 
     def get(self, key: str) -> str:
         if key in self.db:
-            return self.db[key]
+            return self.db.get(key)
         else:
             return f"ERROR: No key {key} exists"
         

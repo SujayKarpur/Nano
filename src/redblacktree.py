@@ -57,6 +57,12 @@ class RedBlackTree:
         self.root: Node = None  
         self.size: int = 0 
 
+
+    def _bstinsert(self, key: str, value: str):
+        pass 
+
+
+
     def insert(self, key: str, value: str):
         new = Node(Color.RED, key, value, None)
 
@@ -94,6 +100,7 @@ class RedBlackTree:
 
             x: Node = new 
             if not self.uncle(x) or self.uncle(x).color == Color.BLACK:
+                print(x.parent, x.parent.parent, x.parent.parent.left, self.uncle(x))
                 if x.parent == self.grandparent(x).left: 
                     if x == x.parent.right:
                         self.rotate(Side.LEFT, x.parent)
@@ -107,10 +114,12 @@ class RedBlackTree:
                     else:
                         self.rotate(Side.LEFT, self.grandparent(x))
             else:
+                print('red uncle!!')
                 while x != self.root and x.parent.color != Color.BLACK:
-                    x.parent.color = self.uncle(x).color = Color.BLACK 
+                    x.parent.color = Color.BLACK; self.uncle(x).color = Color.BLACK 
                     self.grandparent(x).color = Color.RED
                     x = self.grandparent(x) 
+                self.root.color = Color.BLACK 
         
         self.size += 1 
 
@@ -126,9 +135,20 @@ class RedBlackTree:
             else: 
                 return True 
         return False  
+    
+    def get(self, key: str) -> str:
+        current: Node = self.root 
+        while current:
+            if current.key > key:
+                current = current.left 
+            elif current.key < key:
+                current = current.right 
+            else: 
+                return current.value  
+
 
     def delete(self, key: str):
-        pass  
+        self.size -= 1   
 
     #helper methods 
 
@@ -138,9 +158,9 @@ class RedBlackTree:
     def sibling(self, node: Node) -> Maybe_node:
         if node.parent:
             if node.parent.left and node.parent.left == node:
-                return node.right 
+                return node.parent.right 
             else:
-                return node.left 
+                return node.parent.left 
         else:
             return None 
 
@@ -156,23 +176,41 @@ class RedBlackTree:
     def rotate(self, side: Side, pivot: Node) -> None:
         
         if side == Side.RIGHT:
+            if pivot != self.root:
+                skuh = pivot.parent 
             old_parent = pivot.left 
             pivot.left = old_parent.right  
             pivot.parent = old_parent
             old_parent.right = pivot 
+            pivot.color, old_parent.color = old_parent.color, pivot.color
+
             
             if pivot == self.root:
                 self.root = old_parent
-
+            else:
+                old_parent.parent = skuh 
+                if skuh.right == pivot:
+                    skuh.right = old_parent 
+                else:
+                    skuh.left = old_parent
 
         else:       
+            if pivot != self.root:
+                skuh = pivot.parent 
             old_parent = pivot.right 
             pivot.right = old_parent.left 
             pivot.parent = old_parent
             old_parent.left = pivot 
+            pivot.color, old_parent.color = old_parent.color, pivot.color
 
             if pivot == self.root:
                 self.root = old_parent
+            else:
+                old_parent.parent = skuh 
+                if skuh.right == pivot:
+                    skuh.right = old_parent
+                else:
+                    skuh.left = old_parent
 
 
 
@@ -222,8 +260,9 @@ class RedBlackTree:
                 future.append(x.right)
             
             if not queue:
-                queue = future 
+                queue = future.copy() 
                 traversal.append([])
+                future = []
 
         return traversal
     

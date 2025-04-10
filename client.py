@@ -5,6 +5,10 @@ import env
 
 def help() -> None:
     print("\n\navailable commands:")
+    print("LIST")
+    print("CREATE <database>")
+    print("SELECT <database>")
+    print("DROP <database>")
     print("SET <name> <value>")
     print("GET <name>")
     print("DELETE <name>")

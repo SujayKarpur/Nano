@@ -7,6 +7,13 @@ import database
 import env 
 
 
+
+async def write_message(writer: asyncio.StreamWriter, message: str):
+    writer.write(message)
+    await writer.drain() 
+
+
+
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
 
     addr = writer.get_extra_info('peername')
@@ -20,10 +27,10 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             command = await reader.read(1024)
             command = command.decode()
             comlist = command.split()
-            print(comlist)
+
 
             if comlist[0] == 'LIST':
-                send_msg = '\n'.join(*[s.name for s in stores], sep='\n') 
+                send_msg = '\n'.join([s.name for s in stores]).encode()
                 writer.write(send_msg)
                 await writer.drain()
 
@@ -32,7 +39,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 for i in stores:
                     if i.name == comlist[1]:
                         store = i 
-                        send_msg = f"OK. Selected database {i.name}"
+                        send_msg = f"OK. Selected database {i.name}".encode()
                         break 
                 else:
                     send_msg = f"ERROR: No database {comlist[1]} exists"
@@ -46,17 +53,21 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 send_msg = f"OK. Created new database {new_name}".encode()
                 writer.write(send_msg)
                 await writer.drain()
+                print('bye,, created')
 
             elif comlist[0] == 'DROP':
                 for i in range(len(stores)):
                     if stores[i].name == comlist[1]:
                         stores.pop(i)
-                        print(f"OK. Deleted database {comlist[1]}")
+                        send_msg = f"OK. Deleted database {comlist[1]}".encode()
                         break 
                 else:
-                   print(f"ERROR: No database {comlist[1]} exists")   
+                   send_msg = f"ERROR: No database {comlist[1]} exists".encode()
 
-            if comlist[0] == 'GET':
+                writer.write(send_msg)
+                await writer.drain()
+
+            elif comlist[0] == 'GET':
                 send_msg = store.get(comlist[1]).encode()
                 print('sending a new message ', send_msg)
                 writer.write(send_msg)
@@ -82,6 +93,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
     finally:
+        print('hi finally')
         writer.close()
         await writer.wait_closed()
 

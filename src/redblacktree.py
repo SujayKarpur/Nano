@@ -55,17 +55,19 @@ class Node:
         #self.color = other.color 
 
 
+    def direction(self):
+        return 0 if self.parent.left is self else 1
+    
+    def dirchild(self, dir) -> 'Node':
+        return self.left if not dir else self.right 
+
+
 
 class RedBlackTree:
     
     def __init__(self, root:Node = None):
         self.root: Node = root   
         self.size: int = 0 
-
-
-    def _bstinsert(self, key: str, value: str):
-        pass 
-
 
 
     def insert(self, key: str, value: str):
@@ -130,6 +132,7 @@ class RedBlackTree:
 
 
 
+
     def __contains__(self, key: str) -> bool:
         current: Node = self.root 
         while current:
@@ -141,6 +144,7 @@ class RedBlackTree:
                 return True 
         return False  
     
+
     def get(self, key: str) -> Node:
         current: Node = self.root 
         while current:
@@ -150,6 +154,10 @@ class RedBlackTree:
                 current = current.right 
             else: 
                 return current  
+
+
+
+
 
     def _bst_delete(self, root: Node, node: Node) -> Node:
         
@@ -181,8 +189,6 @@ class RedBlackTree:
             return root 
         
     
-    def blackblackfix(self, ):
-        pass 
 
     def delete_helper(self, node: Node) -> None:
         
@@ -191,8 +197,113 @@ class RedBlackTree:
             node.attrcopy(succ)
             self.delete_helper(succ)
 
-        if node.left:
-            node.left.color = 1
+        elif node.left:
+            par = node.parent 
+            if node == par.left:
+                par.left = node.left 
+            else:
+                par.right = node.left 
+            node.left.parent = par 
+        
+        elif node.right:
+            par = node.parent 
+            if node == par.left:
+                par.left = node.right 
+            else:
+                par.right = node.right 
+            node.right.parent = par 
+            node.right.color = Color.BLACK 
+
+
+        else:
+
+            if self.root == node: 
+                return None 
+            
+            if node.color == Color.RED: 
+                if node == node.parent.left:
+                    node.parent.left = None 
+                else:
+                    node.parent.right = None 
+            
+
+            else:
+    
+                parent = node.parent
+
+                dir = node.direction()
+                if dir == 0:
+                    parent.left = None 
+                else:
+                    parent.right = None 
+
+                state = "start_balance"
+                
+                while True:
+                    if state == "start_balance":
+                        dir = node.direction()
+                        sibling = parent.dirchild(1-dir)
+                        distant_nephew = sibling.dirchild(1-dir)
+                        close_nephew   = sibling.dirchild(dir)
+                        
+                        if sibling.color == Color.RED:
+                            self.rotate(Side.RIGHT if dir else Side.LEFT, parent)
+                            parent.color = Color.RED
+                            sibling.color = Color.BLACK 
+                            sibling = close_nephew
+                            
+                            distant_nephew = sibling.dirchild(1-dir)
+                            if distant_nephew and distant_nephew.color == Color.RED:
+                                state = "case_6"
+                                continue  # Jump to case_6
+                            close_nephew = sibling.child[dir]
+                            if close_nephew and close_nephew.color == Color.RED:
+                                state = "case_5"
+                                continue 
+                            
+                            sibling.color = Color.RED
+                            parent.color = Color.BLACK 
+                            return
+                        
+                        if distant_nephew and distant_nephew.color == Color.RED:
+                            state = "case_6"
+                            continue
+                        
+                        if close_nephew and close_nephew.color == Color.RED:
+                            state = "case_5"
+                            continue
+                        
+                        if parent.color == Color.RED:
+                            sibling.color = Color.RED
+                            parent.color = Color.BLACK 
+                            return
+                        
+                        if parent is None:
+                            return
+                        
+                        sibling.color = "RED"
+                        node = parent
+                        parent = node.parent  
+                        continue
+                    
+                    elif state == "case_5":
+                        self.rotate(Side.LEFT if dir else Side.RIGHT,sibling) 
+                        sibling.color = Color.RED
+                        close_nephew.color = Color.BLACK 
+                        distant_nephew = sibling
+                        sibling = close_nephew
+                        state = "case_6"
+                        continue
+                    
+                    elif state == "case_6":
+                        self.rotate(Side.RIGHT if dir else Side.LEFT,parent)
+                        sibling.color = parent.color
+                        parent.color = Color.BLACK 
+                        distant_nephew.color = Color.BLACK 
+                        return
+ 
+
+
 
     def delete(self, key: str) -> None:
 
@@ -202,33 +313,8 @@ class RedBlackTree:
         node = self.get(key)
         self.delete_helper(node)
         
-
-        if node.left and node.right:
-            succ = self._inorder_successor(node)
-            node.attrcopy(succ)
-            self.delete()
-
-        if not node.left and not node.right:
-            self.root = self._bst_delete(self.root, node) 
-        elif not node.right:
-            self.root = self._bst_delete(self.root, node) 
-            if node.color == Color.BLACK:
-                if node.left.color == Color.RED:
-                    node.left.color = Color.BLACK 
-                else:
-                    pass 
-        else:
-            self.root = self._bst_delete(self.root, node)
-            f = self._inorder_successor(node)
-            if node.color == Color.BLACK:
-                if f.color == Color.BLACK:
-                    pass 
-                else:
-                    f.color = Color.RED  
-        
-
-
-        self.root.color = Color.BLACK
+        if self.root:
+            self.root.color = Color.BLACK
         self.size -= 1   
 
     #helper methods 

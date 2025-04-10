@@ -4,14 +4,14 @@ import asyncio
 import env 
 
 def help() -> None:
-    print("\n\navailable commands:")
+    print("\n\navailable commands:\n")
     print("LIST")
     print("CREATE <database>")
     print("SELECT <database>")
-    print("DROP <database>")
-    print("SET <name> <value>")
-    print("GET <name>")
-    print("DELETE <name>")
+    print("DROP <database>\n")
+    print("SET <key> <value>")
+    print("GET <key>")
+    print("DELETE <key>\n")
     print("help")
     print("exit\n\n")
 

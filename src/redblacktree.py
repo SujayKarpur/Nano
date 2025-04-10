@@ -155,38 +155,6 @@ class RedBlackTree:
             else: 
                 return current  
 
-
-
-
-
-    def _bst_delete(self, root: Node, node: Node) -> Node:
-        
-        if root == None:
-            return None 
-        
-        if node > root:
-            root.right = self._bst_delete(root.right, node)
-            return root 
-
-        elif node < root:
-            root.left = self._bst_delete(root.left, node)
-            return root  
-
-        else:
-            if not root.left and not root.right:
-                return None 
-            
-            if not root.right:
-                return root.left 
-            
-            if not root.left:
-                return root.right 
-            
-            f = self._inorder_successor(root)
-            root.attrcopy(f)
-            f = self._bst_delete(f,f)
-
-            return root 
         
     
 
@@ -218,7 +186,8 @@ class RedBlackTree:
         else:
 
             if self.root == node: 
-                return None 
+                self.root = None 
+                return 
             
             if node.color == Color.RED: 
                 if node == node.parent.left:

@@ -112,8 +112,16 @@ class RedBlackTree:
 
 
 
-    def search(self, key: str):
-        pass 
+    def __contains__(self, key: str) -> bool:
+        current: Node = self.root 
+        while current and current.key != key:
+            if current.key > key:
+                current = current.left 
+            elif current.key < key:
+                current = current.right 
+            else: 
+                return True 
+        return False  
 
     def delete(self, key: str):
         pass  

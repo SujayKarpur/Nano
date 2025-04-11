@@ -1,5 +1,5 @@
 import os 
-import env 
+import asyncio 
 
 def merge(path, file_1, file_2) -> None:
     f = open(os.path.join(path, file_1), 'r+')
@@ -31,7 +31,7 @@ def merge(path, file_1, file_2) -> None:
     g.close()
 
 
-def compact() -> None:
+async def compact() -> None:
     while True: 
         for name in os.listdir('./storage'):
             path = os.path.join('./storage', name)
@@ -43,6 +43,8 @@ def compact() -> None:
                     corresponding_metablock = 'sstable_metablock_' + corresponding_metablock_index
                     os.remove(os.path.join(path,s[-1]))
                     os.remove(os.path.join(path,corresponding_metablock))
+                elif len(s) > 1:
+                    while not os.path.getsize(os.path.join(path,s[-1])):
+                        os.remove(os.path.join(path,corresponding_metablock))
+                        s.pop()
 
-
-compact()

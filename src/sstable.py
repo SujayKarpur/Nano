@@ -15,18 +15,21 @@ from env import PATH, FLUSH_SIZE
 
 class SSTable:
 
-    def __init__(self, name: str) -> None:
-        self.number_of_blocks = 0  
+    def __init__(self, name: str, number_of_blocks: int = 0) -> None:
+        self.number_of_blocks = number_of_blocks  
         self.name = name 
 
     
-    def meta_block_write(self, data: Memtable) -> None:
+    def meta_block_write(self, data: Memtable) -> bool:
         new_file_name = f'{PATH}/storage/{self.name}/sstable_metablock_{self.number_of_blocks}' 
 
         bf = BloomFilter()
 
         ol = data.ordered_list()
-        min_key = ol[0]; max_key = ol[-1]
+        if len(ol) > 0:
+            min_key = ol[0]; max_key = ol[-1]
+        else:
+            return False 
 
         for node in ol:
             bf.insert(node.key)
@@ -35,6 +38,8 @@ class SSTable:
             print(bf, file=f)
             print(min_key, max_key, file=f)
             print(data.number_of_elements, file=f) 
+
+        return True 
 
 
 
@@ -49,9 +54,10 @@ class SSTable:
 
 
     def write(self, data: Memtable) -> None:
-        self.meta_block_write(data)
-        self.data_block_write(data)
-        self.number_of_blocks += 1 
+        should = self.meta_block_write(data)
+        if should:
+            self.data_block_write(data)
+            self.number_of_blocks += 1 
     
 
     def find_in_data_block(self, key: str, n: int) -> Tuple[bool,str]:

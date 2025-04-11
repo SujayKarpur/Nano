@@ -20,7 +20,7 @@ class Cluster:
 
 
     def create(self, name: str) -> str:
-        self.names.append(Database(name))
+        self.names.append(name)
         self.len += 1 
         with open(f'{PATH}/storage/meta/list.txt', 'a') as f:
             print(name, file=f)
@@ -51,7 +51,7 @@ class Cluster:
             if i == name:
                 self.current.db.shutdown()
                 self.current = Database(i)
-                return f"OK. Selected database {i.name}"
+                return f"OK. Selected database {i}"
         else:
             return f"ERROR: No database {name} exists"
         

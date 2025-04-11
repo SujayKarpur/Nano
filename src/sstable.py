@@ -35,8 +35,8 @@ class SSTable:
             bf.insert(node.key)
 
         with open(new_file_name, 'w') as f:
-            print(bf, file=f)
-            print(min_key, max_key, file=f)
+            print(bf.array.to01(), file=f)
+            print(min_key.key, max_key.key, file=f)
             print(data.number_of_elements, file=f) 
 
         return True 

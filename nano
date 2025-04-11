@@ -2,6 +2,7 @@
 
 from socket import *
 import asyncio 
+import os 
 
 import database 
 import env 
@@ -40,10 +41,14 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] == 'SELECT':
-                message = stores.select(comlist[1]).encode()           
+                env.current = stores.current 
+                message = stores.select(comlist[1]).encode()          
+
 
             elif comlist[0] == 'CREATE':
+                os.makedirs(f'{env.PATH}/storage/{comlist[1]}', exist_ok=True)
                 message = stores.create(comlist[1]).encode()
+                
 
             elif comlist[0] == 'DROP':
                 message = stores.drop(comlist[1]).encode()
@@ -80,6 +85,9 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
 async def main():
+
+    asyncio.create_task(compact.compact())
+
     server = await asyncio.start_server(handle_client, env.HOST, env.PORT)
     print("Server is listening")
     async with server:
@@ -92,4 +100,5 @@ async def main():
 
 if __name__ == '__main__':
     stores = cluster.Cluster()
+    env.current = stores.current
     asyncio.run(main())

@@ -6,9 +6,9 @@ from env import PATH
 
 class WAL:
 
-    def __init__(self, name: str, clusterlogger = False):
+    def __init__(self, name: str):
         self.name = name 
-        self.file_name = f'{PATH}/storage/{self.name}/wal.log' if not clusterlogger else f''
+        self.file_name = f'{PATH}/storage/{self.name}/wal.log'
         self.file = open(self.file_name, 'a') 
         self.file_open = True 
     
@@ -16,19 +16,16 @@ class WAL:
         if not self.file_open:
             self.file = open(self.file_name, 'a')
             self.file_open = True 
-        print(command, file = self.file) 
+        print(command, file = self.file, flush=True)
+        os.fsync(self.file.fileno()) 
 
     def reset(self):
         if self.file_open:
             self.file.close()
         self.file = open(self.file_name, 'w')
-        self.file_open = True 
+        self.file.close()
+        self.file_open = False  
 
-    
-    def open(self):
-        if not self.file_open:
-            self.file = open(self.file_name, 'a')
-        self.file_open = True 
 
     def close(self):
         if self.file_open:

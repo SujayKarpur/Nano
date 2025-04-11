@@ -39,7 +39,14 @@ class Memtable:
         self.data.insert(key, TOMBSTONE) #tom
         self.wal.write(f"DELETE {key}")
         return True 
+    
 
+    def startup(self) -> None:
+        self.replay()  
+
+
+    def shutdown(self) -> None:
+        self.wal.reset() 
 
 
     def replay(self) -> None:
@@ -55,14 +62,6 @@ class Memtable:
         f.close()
         self.wal.reset()
 
-
-    
-    def select(self) -> None:
-        pass 
-
-
-    def deselect(self) -> None:
-        pass 
 
 
     def ordered_list(self) -> List[Node]:

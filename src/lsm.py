@@ -15,7 +15,7 @@ from env import FLUSH_SIZE, PATH
 
 def how_many_blocks(name: str) -> int:
     """ how many SSTable data/meta blocks already exist? """
-    return len(list(filter(lambda i : 'sstable_datablock_' in i, os.listdir(os.path.join(PATH, name))))) 
+    return len(list(filter(lambda i : 'sstable_datablock_' in i, os.listdir(os.path.join(PATH + '/storage', name))))) 
 
 
 
@@ -34,11 +34,13 @@ class LSMTree:
     
     def startup(self) -> None:
         """ run this upon starting """
-        pass 
+        self.memtable.startup()
+         
 
     def shutdown(self) -> None:
         """ run this when the user exits """
-        self.sstable.write(self.memtable) 
+        self.memtable.shutdown()
+        self.sstable.flush(self.memtable) 
 
 
     def set(self, key: str, value: str) -> bool: 
@@ -60,7 +62,7 @@ class LSMTree:
         if exists:
             return exists, value 
         else:
-            return self.sstable.find(key)
+            return self.sstable.get(key)
 
 
     def delete(self, key: str) -> bool:

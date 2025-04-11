@@ -92,5 +92,4 @@ async def main():
 
 if __name__ == '__main__':
     stores = cluster.Cluster()
-    print(stores.names)
     asyncio.run(main())

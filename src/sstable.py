@@ -53,7 +53,7 @@ class SSTable:
 
 
 
-    def write(self, data: Memtable) -> None:
+    def flush(self, data: Memtable) -> None:
         should = self.meta_block_write(data)
         if should:
             self.data_block_write(data)
@@ -109,15 +109,9 @@ class SSTable:
 
     
 
-    def find(self, key: str) -> Tuple[bool,str]:
+    def get(self, key: str) -> Tuple[bool,str]:
         for block_number in range(self.number_of_blocks-1, -1, -1):
             exists, value = self.find_in_block(block_number, key)
             if exists:
                 return exists, value 
         return (False, '')  
-
-
-
-    def compact(self) -> None:
-        pass 
-    

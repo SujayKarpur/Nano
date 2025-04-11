@@ -7,7 +7,7 @@ def merge(path, file_1, file_2) -> None:
     f = open(os.path.join(path, file_1), 'r+')
     g = open(os.path.join(path,file_2), 'r+')
 
-    a = []; u = [i.rstrip('\n').split() for i in f.readlines()]; v = [i.rstrip('\n').split() for i in g.readlines()]
+    a = []; u = sorted(dict([i.rstrip('\n').split() for i in f.readlines()]).items()); v = sorted(dict([i.rstrip('\n').split() for i in g.readlines()]).items())
 
     x = 0; y = 0
 
@@ -22,7 +22,8 @@ def merge(path, file_1, file_2) -> None:
             y += 1 
 
         if u[x][0] == v[y][0]:
-            a.append(f"{u[x][0]} {v[y][1]}")
+            if v[y][1] not in a:
+                a.append(f"{u[x][0]} {v[y][1]}")
             x += 1 
             y += 1 
     
@@ -35,7 +36,7 @@ def merge(path, file_1, file_2) -> None:
 
 async def compact() -> None:
     while True: 
-        
+
         for name in os.listdir('./storage'):
             path = os.path.join('./storage', name)
             if os.path.isdir(path) and name != env.current:
@@ -49,6 +50,7 @@ async def compact() -> None:
                 elif len(s) > 1:
                     while not os.path.getsize(os.path.join(path,s[-1])):
                         os.remove(os.path.join(path,corresponding_metablock))
-                        s.pop()
+                        s.pop() 
+
         
         await asyncio.sleep(5)

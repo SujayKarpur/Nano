@@ -107,7 +107,6 @@ class RedBlackTree:
 
             x: Node = new 
             if not self.uncle(x) or self.uncle(x).color == Color.BLACK:
-                print(x.parent, x.parent.parent, x.parent.parent.left, self.uncle(x))
                 if x.parent == self.grandparent(x).left: 
                     if x == x.parent.right:
                         self.rotate(Side.LEFT, x.parent)
@@ -121,7 +120,6 @@ class RedBlackTree:
                     else:
                         self.rotate(Side.LEFT, self.grandparent(x))
             else:
-                print('red uncle!!')
                 while x != self.root and x.parent.color != Color.BLACK:
                     x.parent.color = Color.BLACK; self.uncle(x).color = Color.BLACK 
                     self.grandparent(x).color = Color.RED

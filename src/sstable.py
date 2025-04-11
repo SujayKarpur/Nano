@@ -62,12 +62,15 @@ class SSTable:
 
     def find_in_data_block(self, key: str, n: int) -> Tuple[bool,str]:
         #perform a binary search 
+
+        current_file_name = f'{PATH}/storage/{self.name}/sstable_datablock_{self.current_block}'
+
         low = 1; high = n
 
         while low <= high: 
 
             mid = (low+high)//2 
-            mid_line = linecache.getline(mid).rstrip('\n').split()
+            mid_line = linecache.getline(current_file_name, mid).rstrip('\n').split()
             mid_key = mid_line[0]
 
             if mid_key == key:

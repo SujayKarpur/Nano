@@ -1,4 +1,5 @@
 from typing import List, Optional 
+from os import fsync
 
 from src import redblacktree
 from database import Database
@@ -13,6 +14,7 @@ class Cluster:
         self.names: List[str] = list_of_databases()
         self.current = Database("default") 
         self.len: int = len(self.names)
+        self.recover_from_crash()
 
 
     def __contains__(self, name: str) -> bool:
@@ -23,7 +25,8 @@ class Cluster:
         self.names.append(name)
         self.len += 1 
         with open(f'{PATH}/storage/meta/list.txt', 'a') as f:
-            print(name, file=f)
+            print(name, file=f, flush = True)
+            fsync(f.fileno())
         return f"OK. Created new database {name}"
 
 
@@ -36,7 +39,8 @@ class Cluster:
                 self.names.pop(i)
                 self.len -= 1 
                 with open(f'{PATH}/storage/meta/list.txt', 'a') as f:
-                    print(name, TOMBSTONE, file=f)
+                    print(name, TOMBSTONE, file=f, flush = True)
+                    fsync(f.fileno())
                 return f"OK. Deleted database {name}"
         else:
             return f"ERROR: No database {name} exists"
@@ -57,7 +61,13 @@ class Cluster:
         
 
     def cleanup(self) -> None:
-        pass 
+        with open(f'{PATH}/storage/meta/list.txt', 'w') as f:
+            print('\n'.join(self.names), file = f) 
+
 
     def recover_from_crash(self) -> None:
-        pass 
+        with open(f'{PATH}/storage/meta/list.txt','r') as f:
+            values = [tuple(i.rstrip('\n').split()) for i in f.readlines()]
+            fixed = [x[0] for x in sorted(list(filter(lambda i : len(i) == 1, set(values))))]
+        with open(f'{PATH}/storage/meta/list.txt', 'w') as f:
+            print('\n'.join(fixed), file = f) 

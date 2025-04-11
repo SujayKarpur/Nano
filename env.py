@@ -6,3 +6,5 @@ PORT = 12345
 ADDRESS = (HOST, PORT)
 
 PATH = os.path.dirname(os.path.abspath('./env.py'))
+
+FLUSH_SIZE = 1000

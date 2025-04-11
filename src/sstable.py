@@ -17,3 +17,18 @@ class MetaBlock:
 
     def __init__(self) -> None:
         pass  
+
+
+
+class SSTable:
+
+    def __init__(self) -> None:
+        pass 
+
+    def flush(self, ) -> None:
+        pass 
+
+    def get(self, key: str) -> None:
+        pass 
+
+    

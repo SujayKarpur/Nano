@@ -13,8 +13,6 @@ class WAL:
     def write(self, command: str):
         print(command, file = self.file) 
 
-    def replay(self):
-        pass 
 
     def reset(self):
         self.file.close()

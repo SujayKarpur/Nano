@@ -6,6 +6,7 @@ import asyncio
 import database 
 import env 
 import cluster 
+import compact 
 
 
 
@@ -18,7 +19,7 @@ async def write_message(writer: asyncio.StreamWriter, message: str):
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
 
     addr = writer.get_extra_info('peername')
-    print(f"Client {addr} joined")
+    print(f"Client {addr} joined :)")
 
 
     try:
@@ -29,8 +30,10 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             comlist = command.split()
 
             if comlist[0] == 'exit':
+                stores.current.db.shutdown()
                 stores.cleanup()
                 message = 'OK. Exiting Nano............\n'.encode()
+                print(f"Client {addr} left :(")
 
             if comlist[0] == 'LIST':
                 message = stores.list().encode()

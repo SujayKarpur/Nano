@@ -24,12 +24,12 @@ class BloomFilter:
 
     def insert(self, key: str) -> None: 
         for hash_function in self.hash_functions:
-            self.array[hash_function(key)] = 1 
+            self.array[hash_function(key) % BITARRAY_SIZE] = 1 
          
 
     def __contains__(self, key: str) -> bool:
         for hash_function in self.hash_functions:
-            if not self.array[hash_function(key)]:
+            if not self.array[hash_function(key) % BITARRAY_SIZE]:
                 return False 
         return True 
 

@@ -10,12 +10,15 @@ BITARRAY_SIZE = 10000
 
 class BloomFilter:
 
-    def __init__(self):
+    def __init__(self, string=None):
         self.n: int = 0  
         self.m: int = BITARRAY_SIZE
         self.k = 7 
-        self.array = bitarray(self.m)
-        self.array.setall(0)
+        if not string:
+            self.array = bitarray(self.m)
+            self.array.setall(0)
+        else:
+            self.array = bitarray(string)
         self.hash_functions = [(lambda i : hash(i, seed = x)) for x in range(self.k)]
 
 

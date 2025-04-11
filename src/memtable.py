@@ -13,6 +13,7 @@ class Memtable:
         self.name = name 
         self.data = RedBlackTree()
         self.wal = WAL(self.name)
+        self.number_of_elements = 0 
 
 
     def set(self, key: str, value: str) -> bool:
@@ -26,6 +27,7 @@ class Memtable:
             pass 
         
         self.wal.write(f"SET {key} {value}")
+        self.number_of_elements += 1
         return True  
 
 

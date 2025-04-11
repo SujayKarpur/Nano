@@ -14,3 +14,6 @@ class LSMTree:
 
     def flush(self, ):
         pass 
+
+    def compact():
+        pass #idk

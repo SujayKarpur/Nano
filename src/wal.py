@@ -6,9 +6,9 @@ from env import PATH
 
 class WAL:
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, clusterlogger = False):
         self.name = name 
-        self.file_name = f'{PATH}/storage/{self.name}/wal.log'
+        self.file_name = f'{PATH}/storage/{self.name}/wal.log' if not clusterlogger else f''
         self.file = open(self.file_name, 'a') 
         self.file_open = True 
     

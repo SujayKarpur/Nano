@@ -1,4 +1,4 @@
-from src.memtable import Memtable
+from src.lsm import LSMTree
 
 
 class Database:
@@ -6,7 +6,7 @@ class Database:
     count: int = 0
 
     def __init__(self, name: str):
-        self.db = Memtable()
+        self.db = LSMTree(name)
         self.name = name 
         self.id = Database.count 
         Database.count += 1 

@@ -22,10 +22,7 @@ class Memtable:
             return False 
 
         self.data.insert(key, value)
-
-        if self.data.size > FLUSH_SIZE:
-            pass 
-        
+    
         self.wal.write(f"SET {key} {value}")
         self.number_of_elements += 1
         return True  
@@ -39,13 +36,9 @@ class Memtable:
 
 
     def delete(self, key: str) -> bool:
-        if key in self.data:
-            self.data.insert(key, TOMBSTONE) #tom
-            self.wal.write(f"DELETE {key}")
-            return True 
-        else:
-            return False 
-
+        self.data.insert(key, TOMBSTONE) #tom
+        self.wal.write(f"DELETE {key}")
+        return True 
 
 
 
@@ -63,12 +56,7 @@ class Memtable:
         self.wal.reset()
 
 
-    def flush(self) -> None:
-        pass #if the size of the red-black tree > 1000, flush to an SSTable 
-
     
-    
-
     def select(self) -> None:
         pass 
 

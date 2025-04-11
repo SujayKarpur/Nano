@@ -25,24 +25,15 @@ async def main():
     reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
     while True: 
         command = input('> ')
-        if not command: 
-            writer.close()
-            await writer.wait_closed()
-            cluster.Cluster.cleanup()
-            break 
         if command == 'help':
             help()
             continue  
-        elif command == 'exit':
-            writer.close()
-            await writer.wait_closed() 
-            break 
         else:
             writer.write(command.encode())
             await writer.drain()
             output = await reader.read(1024)
             print(output.decode())
-            if not output:
+            if not output or not command or command == 'exit':
                 break 
 
 

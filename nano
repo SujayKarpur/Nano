@@ -28,6 +28,9 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             command = command.decode()
             comlist = command.split()
 
+            if comlist[0] == 'exit':
+                stores.cleanup()
+                message = 'OK. Exiting Nano............\n'.encode()
 
             if comlist[0] == 'LIST':
                 message = stores.list().encode()
@@ -46,21 +49,21 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 if stores.current == None:
                     message = "ERROR. No database selected".encode()
                 else:
-                    stores.current.wal.write(command)
+                    pass #stores.current.wal.write(command)
 
 
-            if comlist[0] == 'GET':
-                message = stores.current.get(comlist[1]).encode()
+                if comlist[0] == 'GET':
+                    message = stores.current.get(comlist[1]).encode()
 
-            elif comlist[0] == 'SET':
-                message = stores.current.set(comlist[1], comlist[2]).encode()
+                elif comlist[0] == 'SET':
+                    message = stores.current.set(comlist[1], comlist[2]).encode()
 
-            elif comlist[0] == 'DELETE':
-                message = stores.current.delete(comlist[1]).encode()
+                elif comlist[0] == 'DELETE':
+                    message = stores.current.delete(comlist[1]).encode()
 
-            else:   
-                break 
-
+                else:   
+                    break 
+            
             await write_message(writer, message)
 
 
@@ -86,4 +89,5 @@ async def main():
 
 if __name__ == '__main__':
     stores = cluster.Cluster()
+    print(stores.names)
     asyncio.run(main())

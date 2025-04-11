@@ -2,6 +2,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 import asyncio 
 
 import env 
+import cluster 
 
 def help() -> None:
     print("\n\navailable commands:\n")
@@ -27,6 +28,7 @@ async def main():
         if not command: 
             writer.close()
             await writer.wait_closed()
+            cluster.Cluster.cleanup()
             break 
         if command == 'help':
             help()

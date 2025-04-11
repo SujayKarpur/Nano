@@ -45,6 +45,8 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             else:
                 if stores.current == None:
                     message = "ERROR. No database selected".encode()
+                else:
+                    stores.current.wal.write(command)
 
 
             if comlist[0] == 'GET':

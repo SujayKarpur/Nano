@@ -20,11 +20,14 @@ class Cluster:
         return f"OK. Created new database {name}"
 
     def drop(self, name: str):
+
+        if name == self.current.name:
+            return "Can't delete currently selected database"
+
         for i in range(self.len):
             if self.databases[i].name == name:
                 self.databases.pop(i)
                 self.len -= 1 
-                self.current = None 
                 return f"OK. Deleted database {name}"
         else:
             return f"ERROR: No database {name} exists"
@@ -35,6 +38,7 @@ class Cluster:
     def select(self, name: str):
         for i in self.databases:
             if i.name == name:
+                self.current.wal.close()
                 self.current = i 
                 return f"OK. Selected database {i.name}"
         else:

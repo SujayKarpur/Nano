@@ -1,4 +1,5 @@
 from src.redblacktree import RedBlackTree
+from src.wal import WAL 
 
 
 class Database:
@@ -6,8 +7,9 @@ class Database:
     count: int = 0
 
     def __init__(self, name: str):
-        self.db = RedBlackTree()
+        self.db = RedBlackTree() 
         self.name = name 
+        self.wal = WAL(self.name)
         self.id = Database.count 
         Database.count += 1 
 

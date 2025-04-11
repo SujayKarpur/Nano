@@ -8,15 +8,29 @@ class WAL:
 
     def __init__(self, name: str):
         self.name = name 
-        self.file = open(f'{PATH}/storage/{self.name}/wal.log', 'a') 
+        self.file_name = f'{PATH}/storage/{self.name}/wal.log'
+        self.file = open(self.file_name, 'a') 
+        self.file_open = True 
     
     def write(self, command: str):
+        if not self.file_open:
+            self.file = open(self.file_name, 'a')
+            self.file_open = True 
         print(command, file = self.file) 
 
-
     def reset(self):
-        self.file.close()
-        self.file = open(f'../storage/{self.name}/wal.log', 'w')
+        if self.file_open:
+            self.file.close()
+        self.file = open(self.file_name, 'w')
+        self.file_open = True 
+
+    
+    def open(self):
+        if not self.file_open:
+            self.file = open(self.file_name, 'a')
+        self.file_open = True 
 
     def close(self):
-        self.file.close() 
+        if self.file_open:
+            self.file.close() 
+        self.file_open = False 

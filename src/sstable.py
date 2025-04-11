@@ -1,6 +1,7 @@
 from typing import List, Tuple 
 import linecache
 import asyncio 
+import os 
 
 from src.redblacktree import RedBlackTree, TraversalType
 from src.bloomfilter import BloomFilter 
@@ -113,7 +114,8 @@ class SSTable:
     
 
     def get(self, key: str) -> Tuple[bool,str]:
-        for block_number in range(self.number_of_blocks-1, -1, -1):
+        for x in os.listdir(f'{PATH}/storage/{self.name}/'):
+            block_number = x.split('_')[-1]
             exists, value = self.find_in_block(block_number, key)
             if exists:
                 return exists, value 

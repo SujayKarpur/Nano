@@ -2,11 +2,15 @@ from typing import List, Optional
 
 from src import redblacktree
 from database import Database
+from meta_server import list_of_databases
+
 
 
 class Cluster:
 
     def __init__(self) -> None: 
+        self.names: List[str] = list_of_databases()
+        self.current = None 
         self.databases: List[Database] = [Database("default")]
         self.current: Database = self.databases[-1]
         self.len: int = 0 

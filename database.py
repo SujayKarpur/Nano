@@ -1,5 +1,4 @@
-from src.redblacktree import RedBlackTree
-from src.wal import WAL 
+from src.memtable import Memtable
 
 
 class Database:
@@ -7,9 +6,8 @@ class Database:
     count: int = 0
 
     def __init__(self, name: str):
-        self.db = RedBlackTree() 
+        self.db = Memtable()
         self.name = name 
-        self.wal = WAL(self.name)
         self.id = Database.count 
         Database.count += 1 
 
@@ -18,18 +16,22 @@ class Database:
         return self.db.__repr__()
 
     def set(self, key: str, value: str) -> str:
-        self.db.insert(key, value)
-        return f"OK. set database[{key}] = {value}"
+        if self.db.set(key, value):
+            return f"OK. set database[{key}] = {value}"
+        else:
+            return f"ERROR. Key {key} is reserved internally"
 
     def get(self, key: str) -> str:
-        if key in self.db:
-            return self.db.get(key).value 
+        exists, value = self.db.get(key)
+
+        if exists:
+            return value 
         else:
             return f"ERROR: No key {key} exists"
         
+        
     def delete(self, key: str) -> str:
-        if key in self.db:
-            self.db.delete(key)
+        if self.db.delete(key):
             return f"OK. removed key {key}"
         else:
             return f"ERROR: No key {key} exists"

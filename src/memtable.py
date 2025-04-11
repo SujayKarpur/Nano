@@ -1,6 +1,6 @@
-from typing import Tuple, Any, Optional 
+from typing import Tuple, List  
 
-from src.redblacktree import RedBlackTree
+from src.redblacktree import RedBlackTree, TraversalType, Node
 from src.bloomfilter import BloomFilter 
 from src.wal import WAL 
 from env import FLUSH_SIZE, TOMBSTONE
@@ -24,7 +24,8 @@ class Memtable:
 
         if self.data.size > FLUSH_SIZE:
             pass 
-
+        
+        self.wal.write(f"SET {key} {value}")
         return True  
 
 
@@ -38,6 +39,7 @@ class Memtable:
     def delete(self, key: str) -> bool:
         if key in self.data:
             self.data.insert(key, TOMBSTONE) #tom
+            self.wal.write(f"DELETE {key}")
             return True 
         else:
             return False 
@@ -71,3 +73,7 @@ class Memtable:
 
     def deselect(self) -> None:
         pass 
+
+
+    def ordered_list(self) -> List[Node]:
+        return self.data.traverse(TraversalType.INORDER)

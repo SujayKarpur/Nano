@@ -3,8 +3,20 @@ from os import fsync
 
 from src import redblacktree
 from database import Database
-from meta_server import list_of_databases
 from env import PATH, TOMBSTONE
+
+
+
+
+
+
+
+def list_of_databases() -> List[str]:
+    with open(f'{PATH}/storage/meta/list.txt', 'r') as f:
+        names = [i.rstrip('\n') for i in f.readlines()]
+    return names 
+
+
 
 
 
@@ -12,6 +24,7 @@ class Cluster:
 
     def __init__(self) -> None: 
         self.names: List[str] = list_of_databases()
+        print(self.names)
         self.current = Database("default") 
         self.len: int = len(self.names)
         self.recover_from_crash()
@@ -24,7 +37,7 @@ class Cluster:
     def create(self, name: str) -> str:
         self.names.append(name)
         self.len += 1 
-        with open(f'{PATH}/storage/meta/list.txt', 'a') as f:
+        with open(f'{PATH}/storage/meta/wal.log', 'a') as f:
             print(name, file=f, flush = True)
             fsync(f.fileno())
         return f"OK. Created new database {name}"
@@ -38,7 +51,7 @@ class Cluster:
             if self.names[i] == name:
                 self.names.pop(i)
                 self.len -= 1 
-                with open(f'{PATH}/storage/meta/list.txt', 'a') as f:
+                with open(f'{PATH}/storage/meta/wal.log', 'a') as f:
                     print(name, TOMBSTONE, file=f, flush = True)
                     fsync(f.fileno())
                 return f"OK. Deleted database {name}"
@@ -62,11 +75,13 @@ class Cluster:
 
     def cleanup(self) -> None:
         with open(f'{PATH}/storage/meta/list.txt', 'w') as f:
+            self.names = sorted(set(self.names))
             print('\n'.join(self.names), file = f) 
-
+        f = open(f'{PATH}/storage/meta/wal.log', 'w')
+        f.close()
 
     def recover_from_crash(self) -> None:
-        with open(f'{PATH}/storage/meta/list.txt','r') as f:
+        with open(f'{PATH}/storage/meta/wal.log','r') as f:
             values = [tuple(i.rstrip('\n').split()) for i in f.readlines()]
             fixed = [x[0] for x in sorted(list(filter(lambda i : len(i) == 1, set(values))))]
         with open(f'{PATH}/storage/meta/list.txt', 'w') as f:

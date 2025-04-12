@@ -4,10 +4,12 @@ from socket import *
 import asyncio 
 import os 
 import shutil 
+import json 
 
 import env 
 import src.database.cluster as cluster 
 import compact 
+import auth 
 
 
 
@@ -30,6 +32,10 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             command = command.decode()
             comlist = command.split()
 
+
+            auth.authorize(comlist[0])
+
+
             if not command:
                 raise BrokenPipeError()
 
@@ -38,6 +44,25 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 stores.cleanup()
                 message = 'OK. Exiting Nano............\n'.encode()
                 print(f"Client {addr} left :(")
+
+            
+            elif comlist[0] == 'SHARE':
+                share_to_user_uname = comlist[1]
+                permission_level = comlist[2]
+
+                with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'r') as f:
+                    accesses = json.load(f)
+
+                
+                accesses[env.current_database.name] = permission_level
+
+                message = f"OK. Granted user {share_to_user_uname} permission level {permission_level}".encode()
+
+
+
+            elif comlist[0] == 'LOGOUT':
+                auth.logout()
+
 
             elif comlist[0] == 'LIST':
                 message = stores.list().encode()

@@ -5,10 +5,12 @@ import jwt
 import time 
 
 
-from env import USER_STORAGE_PATH, SECRET_KEY
+import env 
+
+#from env import USER_STORAGE_PATH, SECRET_KEY
 
 
-USERS_FILE = f'{USER_STORAGE_PATH}/users.json'
+USERS_FILE = f'{env.USER_STORAGE_PATH}/users.json'
 
 
 
@@ -27,7 +29,7 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
         with open(USERS_FILE, 'w') as f:
             json.dump(users, f, indent=2)
 
-        with open(f'{USER_STORAGE_PATH}/{username}.json', 'w') as f:
+        with open(f'{env.USER_STORAGE_PATH}/{username}.json', 'w') as f:
             json.dump({"default" : 4}, f)
 
 
@@ -41,15 +43,30 @@ def login(username: str, password: str) -> str:
     with open(USERS_FILE, 'r') as f:
         users = json.load(f) 
 
-    if username not in users or not bcrypt.checkpw(password, users[username]):
+    if username not in users or not bcrypt.checkpw(password.encode(), users[username].encode()):
         return None 
     
     payload = {"username" : username, "exp" : time.time() + 600}
-    token = jwt.encode(payload, SECRET_KEY)
+    token = jwt.encode(payload, env.SECRET_KEY)
 
     return token 
 
 
 
 def logout() -> None:
-    pass 
+    env.current_user = None 
+
+
+
+
+
+
+def authorize(command: str) -> bool:
+    if not env.current_user:
+        return command in ('exit', '', )
+
+    payload = jwt.decode(env.current_user, env.SECRET_KEY)
+    username = payload["username"]
+
+    with open(f'{env.USER_STORAGE_PATH}/{username}.json') as f:
+        access = json.load(f) 

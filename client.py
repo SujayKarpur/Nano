@@ -67,8 +67,13 @@ async def main():
 
         username = input('Enter your username:  ')
         password = input('Enter your password:  ')
-        auth.login(username, password)
+        token = auth.login(username, password)
 
+        if not token:
+            print("ERROR: Invalid username or password")
+        else:
+            env.current_user = token 
+            print("Logged In successfully :)")
 
 
     

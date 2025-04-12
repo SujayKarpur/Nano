@@ -11,6 +11,7 @@ import src.database.cluster as cluster
 import compact 
 import auth 
 from src.user.user import User 
+from storage.statehandler import get_current_username, get_current_db_name
 
 
 
@@ -36,14 +37,18 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             if not command:
                 raise BrokenPipeError()
 
-            with open('cu_token.txt', 'r') as f:
-                tok = f.read().rstrip('\n')
-                print(f"token is {tok}")
-                user = User(tok)
-            
+            username = get_current_username()
+            user = User(username)
             can = auth.authorize(user, comlist[0])
 
+            if username != stores.username:
+                stores.set_user(username)
+
+
             if not can:
+                print(f"The current database is {get_current_db_name()}, the current user is {get_current_username()}, the perm")
+                print(stores.user.own(), stores.user.modify(), stores.user.write(), stores.user.read(), sep='\n')
+                print('wut', stores.current.name in stores.user.own())
                 message = "ERROR: You do not have the permission to perform that action".encode()
 
 
@@ -63,7 +68,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     accesses = json.load(f)
 
                 
-                accesses[env.current_database.name] = permission_level
+                accesses[get_current_db_name()] = permission_level
 
                 with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'w') as f:
                     json.dump(accesses, f)
@@ -79,19 +84,19 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
             elif comlist[0] == 'LIST':
                 print("trynna list shi here")
-                message = stores.list(user).encode()
+                message = stores.list().encode()
                 print("encoded the list message", message.decode())
 
 
 
             elif comlist[0] == 'SELECT':
                 #env.current = stores.current 
-                message = stores.select(comlist[1], user).encode()          
+                message = stores.select(comlist[1]).encode()          
 
 
             elif comlist[0] == 'CREATE':
                 os.makedirs(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}', exist_ok=True)
-                message = stores.create(comlist[1], user).encode()
+                message = stores.create(comlist[1]).encode()
                 
 
             elif comlist[0] == 'DROP':
@@ -100,7 +105,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     message = "ERROR: Can't drop the default database".encode()
                 
                 else:
-                    msg = stores.drop(comlist[1], user)
+                    msg = stores.drop(comlist[1])
                     if msg[0] == 'O':
                         shutil.rmtree(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}')
                     

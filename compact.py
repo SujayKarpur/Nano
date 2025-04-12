@@ -4,6 +4,8 @@ from typing import List
 
 import env 
 
+from storage.statehandler import get_current_db_name
+
 def merge(path, file_1, file_2) -> None:
     f = open(os.path.join(path, file_1), 'r+')
     g = open(os.path.join(path,file_2), 'r+')
@@ -43,7 +45,7 @@ async def compact() -> None:
     while True: 
         for name in os.listdir('./storage'):
             path = os.path.join('./storage', name)
-            if os.path.isdir(path) and name != env.current_database:
+            if os.path.isdir(path) and name != get_current_db_name():
                 s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))
                 if len(s) > 0:
                     for indexo in range(len(s)):

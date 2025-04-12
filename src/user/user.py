@@ -7,14 +7,8 @@ import env
 
 class User:
     
-    def __init__(self, token: str) -> None:
-        payload = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])
-        self.username = payload["username"] 
-
-        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
-            self.accesses = json.load(f)
-        
-
+    def __init__(self, username: str) -> None:
+        self.username = username  
 
      
     def read(self, ) -> List[str]:
@@ -36,7 +30,7 @@ class User:
         with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
             accesses = json.load(f) 
         
-        return list(filter(lambda i : accesses[i] > 1, accesses))
+        return list(filter(lambda i : accesses[i] > 2, accesses))
     
 
 
@@ -44,7 +38,7 @@ class User:
         with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
             accesses = json.load(f) 
         
-        return list(filter(lambda i : accesses[i] > 1, accesses))
+        return list(filter(lambda i : accesses[i] > 3, accesses))
     
 
 
@@ -52,4 +46,4 @@ class User:
         with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
             accesses = json.load(f) 
         
-        return list(filter(lambda i : accesses[i] > 1, accesses))
+        #return list(filter(lambda i : accesses[i] > 1, accesses))

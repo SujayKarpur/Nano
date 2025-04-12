@@ -7,6 +7,8 @@ import time
 from src.user.user import User 
 import env 
 
+from storage.statehandler import get_current_username, get_current_db_name, set_current_user_token
+
 #from env import USER_STORAGE_PATH, SECRET_KEY
 
 
@@ -49,12 +51,14 @@ def login(username: str, password: str) -> str:
     payload = {"username" : username, "exp" : time.time() + 600}
     token = jwt.encode(payload, env.SECRET_KEY, algorithm='HS256')
 
+    set_current_user_token(token)
+
     return token 
 
 
 
 def logout() -> None:
-    env.current_user = None 
+    set_current_user_token(None)
 
 
 
@@ -65,19 +69,21 @@ def authorize(user: User, command: str) -> bool:
 
     print('check the current user ', user)
 
+    current_db = get_current_db_name()
+
     if not user:
         return command in ('exit', '', )
 
-    if env.current_database.name in user.own():
+    if current_db in user.own():
         return True 
     
-    if env.current_database.name in user.modify():
+    if current_db in user.modify():
         return True 
     
-    if env.current_database.name in user.write():
+    if current_db in user.write():
         return command not in ('SHARE', 'DROP')
 
-    if env.current_database.name in user.read():
+    if current_db in user.read():
         return command in ('LIST', '', 'exit', 'GET', 'SELECT', 'LOGOUT')
     
     return command in ('LIST', '', 'exit', 'LOGOUT', 'SELECT')

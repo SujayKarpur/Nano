@@ -10,7 +10,7 @@ from env import STORAGE_PATH, SECRET_KEY
 #in progress
 #current idea : currently logged in user ka token + db name??
 
-STATE_FILE = f'{STORAGE_PATH}/state.json', 'r'
+STATE_FILE = f'{STORAGE_PATH}/state.json'
 
 def logged_in() -> bool: 
     token = get_current_user_token()
@@ -39,7 +39,7 @@ def set_current_user_token(token: str) -> None:
 
 
 
-def current_username() -> str: 
+def get_current_username() -> str: 
     
     if not logged_in():
         return None 

@@ -1,11 +1,14 @@
 from typing import List 
-from os import fsync
+from os import fsync, makedirs 
 from bisect import insort, bisect 
 import json 
 
 from src.database.wal import WAL 
 from src.database.database import Database
 from src.user.user import User 
+
+
+from storage.statehandler import get_current_username, get_current_db_name, set_current_db_name
 
 import env
 
@@ -32,42 +35,59 @@ class Cluster:
     Collection of all Nano databases 
     """
 
-    def __init__(self, user:User = None) -> None: 
+    def __init__(self) -> None: 
         """ Initialize the Cluster when the server starts running """
+        self.recover_from_crash()
         self.names: List[str] = list_of_databases()
         self.wal = WAL(env.META_STORAGE_PATH)
-        self.current = Database("default"+user.username) 
         self.len: int = len(self.names)
-        env.current_database = Database("default"+user.username)
-        self.recover_from_crash()
+
+        self.username = self.name = self.current = self.user = None 
+
+    def set_user(self, username: str) -> None:
+        self.username = get_current_username()
+        new_name = "default"+self.username
+
+        self.user = User(self.username)
+        makedirs(f'{env.DATABASE_STORAGE_PATH}/{new_name}', exist_ok = True)
+        self.current = Database(new_name) 
+        set_current_db_name(new_name)
+
+        if new_name not in self.names:
+            self.names.append(new_name)
+
+        self.names = list(set.intersection(set(self.names), set(self.user.read())) | {new_name})
+ 
 
 
-    def __contains__(self, name: str, user: User) -> bool:
+    def __contains__(self, name: str) -> bool:
         if name == "default":
             return True 
-        return name in set.intersection(set(self.names), set(user.read()))
+        return name in set.intersection(set(self.names), set(self.user.read()))
 
 
-    def create(self, name: str, user: User) -> str:
+    def create(self, name: str) -> str:
         self.names.append(name)
         self.len += 1 
         self.wal.write(name)
 
-        with open(f'{env.USER_STORAGE_PATH}/{user.username}.json', 'r') as f:
+        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
             dbs = json.load(f) 
         
         dbs[name] = 4 
 
-        with open(f'{env.USER_STORAGE_PATH}/{user.username}.json', 'w') as f:
+        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'w') as f:
             dbs = json.dump(dbs, f, indent=2)
 
         return f"OK. Created new database {name}"
 
 
-    def drop(self, name: str, user: User) -> str:
+    def drop(self, name: str) -> str:
+
         if name == self.current.name:
-            env.current_database = Database("default"+user.username)
-            self.current = Database("default")
+            set_current_db_name("default" + self.username)
+            self.current = Database("default" + self.username)
+
 
         for i in range(self.len):
             if self.names[i] == name:
@@ -75,12 +95,12 @@ class Cluster:
                 self.len -= 1 
                 self.wal.write(f'{name} {env.TOMBSTONE}')
 
-                with open(f'{env.USER_STORAGE_PATH}/{user.username}.json', 'r') as f:
+                with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
                     dbs = json.load(f) 
                 
                 dbs.pop(name)
 
-                with open(f'{env.USER_STORAGE_PATH}/{user.username}.json', 'w') as f:
+                with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'w') as f:
                     dbs = json.dump(dbs, f, indent=2)
 
                 return f"OK. Deleted database {name}"
@@ -90,19 +110,27 @@ class Cluster:
             return f"ERROR: No database {name} exists"
 
 
-    def list(self, user: User) -> str:
+    def list(self) -> str:
         print('hi i"m in list')
         print(set(self.names))
-        print(set(user.read()))
-        return '\n'.join(set.intersection(set(self.names), set(user.read())))
+        print(set(self.user.read()))
+        return '\n'.join((set.intersection(set(self.names), set(self.user.read())) | {"default"}) - {"default" + self.username})
 
 
-    def select(self, name: str, user: User) -> str:
+    def select(self, name: str) -> str:
+
+        if name == "default":
+            name += self.username 
+
+
+        if name == self.current.name:
+            return f"Void. Already in database {name}"
+
         for i in self.names:
             if i == name:
                 self.current.db.shutdown()
                 self.current = Database(i)
-                env.current_database = Database(i)
+                set_current_db_name(i)
                 return f"OK. Selected database {i}"
         else:
             return f"ERROR: No database {name} exists"
@@ -126,3 +154,8 @@ class Cluster:
         with open(LIST_PATH, 'a') as f:
             if databases:
                 print('\n'.join(databases), file = f) 
+
+        data = {"current_user": None, "current_database": None}
+
+        with open(f'{env.STORAGE_PATH}/state.json', 'w') as f:
+            json.dump(data, f, indent=2)

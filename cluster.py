@@ -41,6 +41,7 @@ class Cluster:
                 with open(f'{PATH}/storage/meta/list.txt', 'a') as f:
                     print(name, TOMBSTONE, file=f, flush = True)
                     fsync(f.fileno())
+                self.current = Database("default")
                 return f"OK. Deleted database {name}"
         else:
             return f"ERROR: No database {name} exists"

@@ -37,7 +37,6 @@ def merge(path, file_1, file_2) -> None:
 async def compact() -> None:
     while True: 
         for name in os.listdir('./storage'):
-            print(name)
             path = os.path.join('./storage', name)
             if os.path.isdir(path) and name != env.current:
                 s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))

@@ -3,9 +3,7 @@ import linecache
 import asyncio 
 import os 
 
-from src.redblacktree import RedBlackTree, TraversalType
 from src.bloomfilter import BloomFilter 
-from src.wal import WAL 
 from src.memtable import Memtable
 
 from env import PATH, FLUSH_SIZE
@@ -55,6 +53,7 @@ class SSTable:
 
 
     def flush(self, data: Memtable) -> None:
+        self.number_of_blocks = len(os.listdir(f'{PATH}/storage/{self.name}/'))//2
         should = self.meta_block_write(data)
         if should:
             self.data_block_write(data)
@@ -115,8 +114,9 @@ class SSTable:
 
     def get(self, key: str) -> Tuple[bool,str]:
         for x in os.listdir(f'{PATH}/storage/{self.name}/'):
-            block_number = x.split('_')[-1]
-            exists, value = self.find_in_block(block_number, key)
-            if exists:
-                return exists, value 
+            if x != 'wal.log':
+                block_number = x.split('_')[-1]
+                exists, value = self.find_in_block(block_number, key)
+                if exists:
+                    return exists, value 
         return (False, '')  

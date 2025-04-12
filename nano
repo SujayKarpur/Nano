@@ -3,6 +3,7 @@
 from socket import *
 import asyncio 
 import os 
+import shutil 
 
 import database 
 import env 
@@ -51,7 +52,16 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 
 
             elif comlist[0] == 'DROP':
-                message = stores.drop(comlist[1]).encode()
+
+                if comlist[1] == 'default':
+                    message = "ERROR: Can't drop the default database".encode()
+                
+                else:
+                    msg = stores.drop(comlist[1])
+                    if msg[0] == 'O':
+                        shutil.rmtree(f'{env.PATH}/storage/{comlist[1]}')
+                    
+                    message = msg.encode()
 
             else:
                 if stores.current == None:

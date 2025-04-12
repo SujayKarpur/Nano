@@ -32,7 +32,7 @@ class Cluster:
 
     def drop(self, name: str) -> str:
         if name == self.current.name:
-            return "Can't delete currently selected database"
+            self.current = Database("default")
 
         for i in range(self.len):
             if self.names[i] == name:
@@ -41,7 +41,6 @@ class Cluster:
                 with open(f'{PATH}/storage/meta/list.txt', 'a') as f:
                     print(name, TOMBSTONE, file=f, flush = True)
                     fsync(f.fileno())
-                self.current = Database("default")
                 return f"OK. Deleted database {name}"
         else:
             return f"ERROR: No database {name} exists"

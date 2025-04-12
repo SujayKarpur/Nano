@@ -1,5 +1,6 @@
 import os 
 import asyncio 
+from typing import List 
 
 import env 
 
@@ -8,7 +9,7 @@ def merge(path, file_1, file_2) -> None:
     g = open(os.path.join(path,file_2), 'r+')
 
     a = []; u = sorted(dict([i.rstrip('\n').split() for i in f.readlines()]).items()); v = sorted(dict([i.rstrip('\n').split() for i in g.readlines()]).items())
-
+    print('hello compact', a,u,v)
     x = 0; y = 0
 
     while x < len(u) and y < len(v):
@@ -22,16 +23,20 @@ def merge(path, file_1, file_2) -> None:
             y += 1 
 
         if u[x][0] == v[y][0]:
-            if v[y][1] not in a:
+            for string in a:
+                if string.split()[0] == u[x][0]:
+                    break
+            else:
                 a.append(f"{u[x][0]} {v[y][1]}")
             x += 1 
             y += 1 
     
-
-    print('\n'.join(a), file=f)     
-
+    print('bye compact', a)
     f.close()
     g.close()
+
+    with open(os.path.join(path, file_1), 'w') as f:
+        print('\n'.join(a), file=f)     
 
 
 async def compact() -> None:

@@ -2,7 +2,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 import asyncio 
 
 import env 
-import cluster 
+ 
 
 def help() -> None:
     print("\n\navailable commands:\n")
@@ -17,12 +17,30 @@ def help() -> None:
     print("exit\n\n")
 
 
+def startup() -> None:
+    print("\n\nWelcome to Nano!\n")
+    print("Nano is a lightweight, secure key value store with concurrency control")
+    print('\n\n')
+    print('1 - LOGIN (if you already have a Nano account)')
+    print('2 - SIGN UP (to create a new Nano account!)')
+    print('3 - TEMP (to continue incognito - changes you made will not be saved!)') 
+    print('\n\n')
+
 
 
 async def main():
-    print("Welcome to Nano!")
-    help() 
+    startup()
     reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
+
+    user_option = int(input('> '))
+
+    while user_option not in (1,2,3):
+        print("That is not a valid option")
+        print("Please enter a number between 1 and 3")
+        user_option = int(input('> '))
+    
+
+
     while True: 
         command = input('> ')
         if command == 'help':
@@ -34,7 +52,10 @@ async def main():
             output = await reader.read(1024)
             print(output.decode())
             if not output or not command or command == 'exit':
+                writer.close() 
+                await writer.wait_closed() 
                 break 
+
 
 
 

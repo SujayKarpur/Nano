@@ -1,6 +1,6 @@
 from typing import Tuple, List  
 
-from src.database.redblacktree import RedBlackTree, TraversalType, Node
+from src.database.redblacktree import RedBlackTree, Node
 from src.database.wal import WAL 
 from env import FLUSH_SIZE, TOMBSTONE, DATABASE_STORAGE_PATH
 

@@ -1,4 +1,5 @@
 import os 
+import secrets 
 
 
 HOST = "127.0.0.1"
@@ -31,3 +32,12 @@ DATABASE_STORAGE_PATH: str = f'{STORAGE_PATH}/databases'
 META_DATABASE_STORAGE_PATH: str = f'{DATABASE_STORAGE_PATH}/meta'
 USER_STORAGE_PATH: str = f'{STORAGE_PATH}/users'
 META_USER_STORAGE_PATH = f'{USER_STORAGE_PATH}/meta'
+
+
+
+
+
+
+
+# secret key for jwt 
+SECRET_KEY = secrets.token_hex(32)

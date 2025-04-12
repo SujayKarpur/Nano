@@ -1,9 +1,10 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import asyncio 
-import json 
 
 import env 
 import auth 
+
+
 
 def help() -> None:
     print("\n\navailable commands:\n")
@@ -16,6 +17,8 @@ def help() -> None:
     print("DELETE <key>\n")
     print("help")
     print("exit\n\n")
+
+
 
 
 def startup() -> None:
@@ -57,6 +60,14 @@ async def main():
                 print(ret)
                 print("To use Nano, run the client again and login with your new credentials")
                 exit()
+
+
+    
+    if user_option == 1:
+
+        username = input('Enter your username:  ')
+        password = input('Enter your password:  ')
+        auth.login(username, password)
 
 
 

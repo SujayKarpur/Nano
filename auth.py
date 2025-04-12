@@ -1,9 +1,11 @@
 import json 
 from typing import Tuple 
 import bcrypt 
+import jwt 
+import time 
 
 
-from env import USER_STORAGE_PATH
+from env import USER_STORAGE_PATH, SECRET_KEY
 
 
 USERS_FILE = f'{USER_STORAGE_PATH}/users.json'
@@ -32,8 +34,22 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
         return (True, "SIGNED UP SUCCESSFULLY!!")
 
 
-def login() -> None:
-    pass 
+
+
+def login(username: str, password: str) -> str:
+    
+    with open(USERS_FILE, 'r') as f:
+        users = json.load(f) 
+
+    if username not in users or not bcrypt.checkpw(password, users[username]):
+        return None 
+    
+    payload = {"username" : username, "exp" : time.time() + 600}
+    token = jwt.encode(payload, SECRET_KEY)
+
+    return token 
+
+
 
 def logout() -> None:
     pass 

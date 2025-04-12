@@ -64,4 +64,4 @@ class Memtable:
 
 
     def ordered_list(self) -> List[Node]:
-        return self.data.traverse(TraversalType.INORDER)
+        return self.data._inorder_traversal_helper(self.data.root)

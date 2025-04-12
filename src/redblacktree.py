@@ -1,5 +1,225 @@
 from enum import Enum 
 from typing import Optional, List 
+from functools import total_ordering
+
+
+
+Maybe_node = Optional['Node']
+
+class Color(Enum):
+    RED = 0 
+    BLACK = 1 
+
+class Side(Enum):
+    LEFT = 0 
+    RIGHT = 1 
+
+
+
+@total_ordering
+class Node:
+
+    """
+    Elements of the Red-Black Tree
+    """
+    
+    def __init__(self, color: Color, key: str, value: str, parent: 'Node', left: Maybe_node = None, right: Maybe_node = None) -> None:
+        self.color = color  
+        self.key = key 
+        self.value = value 
+        self.parent = parent
+        self.left = left 
+        self.right = right  
+
+    def __repr__(self) -> str:
+        return f"{self.key}: {self.value}   ({self.color.name})"
+
+    def __eq__(self, other: 'Node'):
+        if self and not other:
+            return False 
+        if other and not self:
+            return False 
+        if not other and not self:
+            return True 
+        return self.key == other.key 
+
+    def __lt__(self, other: 'Node'):
+        return str.__lt__(self.key, other.key)
+    
+
+
+
+class RedBlackTree:
+
+    """
+    Red-Black Tree for Memtable
+    """
+    
+    def __init__(self, root:Node = None):
+        self.root: Node = root   
+        self.size: int = 0 
+
+
+    def insert(self, key: str, value: str):
+        new = Node(Color.RED, key, value, None)
+
+        if self.size == 0:
+            new.color = Color.BLACK
+            self.root = new 
+        elif self.size == 1:
+            if new > self.root:
+                self.root.right = new 
+                new.parent = self.root 
+            elif new < self.root: 
+                self.root.left = new 
+                new.parent = self.root 
+            else:
+                self.root.value = value 
+        else:
+            
+            current: Node = self.root 
+
+            while not (not current.left and new < current) and not (not current.right and new > current):
+                if new > current:
+                    current = current.right 
+                elif new < current:
+                    current = current.left 
+                else:
+                    current.value = new.value 
+                    return  
+            
+            if new > current:
+                current.right = new 
+                new.parent = current 
+            else: 
+                current.left = new 
+                new.parent = current 
+
+            x: Node = new 
+            if not self.uncle(x) or self.uncle(x).color == Color.BLACK:
+                if x.parent == self.grandparent(x).left: 
+                    if x == x.parent.right:
+                        self.rotate(Side.LEFT, x.parent)
+                        self.rotate(Side.RIGHT, self.grandparent(x)) 
+                    else:
+                        self.rotate(Side.LEFT, self.grandparent(x))
+                else:
+                    if x == x.parent.left:
+                        self.rotate(Side.RIGHT, x.parent)
+                        self.rotate(Side.LEFT, self.grandparent(x))  
+                    else:
+                        self.rotate(Side.LEFT, self.grandparent(x))
+            else:
+                while x != self.root and x.parent.color != Color.BLACK:
+                    x.parent.color = Color.BLACK; self.uncle(x).color = Color.BLACK 
+                    self.grandparent(x).color = Color.RED
+                    x = self.grandparent(x) 
+                self.root.color = Color.BLACK 
+        
+        self.size += 1 
+
+
+
+
+    def __contains__(self, key: str) -> bool:
+        current: Node = self.root 
+        while current:
+            if current.key > key:
+                current = current.left 
+            elif current.key < key:
+                current = current.right 
+            else: 
+                return True 
+        return False  
+    
+
+    def get(self, key: str) -> Node:
+        current: Node = self.root 
+        while current:
+            if current.key > key:
+                current = current.left 
+            elif current.key < key:
+                current = current.right 
+            else: 
+                return current  
+
+
+    #helper methods 
+
+    def sibling(self, node: Node) -> Maybe_node:
+        if node.parent:
+            if node.parent.left and node.parent.left == node:
+                return node.parent.right 
+            else:
+                return node.parent.left 
+        else:
+            return None 
+
+    def grandparent(self, node: Node) -> Maybe_node:
+        if node.parent:
+            return node.parent.parent
+        return None  
+
+    def uncle(self, node: Node) -> Maybe_node:
+        return self.sibling(node.parent) 
+
+
+    def rotate(self, side: Side, pivot: Node) -> None:
+        
+        if side == Side.RIGHT:
+            if pivot != self.root:
+                skuh = pivot.parent 
+            old_parent = pivot.left 
+            pivot.left = old_parent.right  
+            pivot.parent = old_parent
+            old_parent.right = pivot 
+            pivot.color, old_parent.color = old_parent.color, pivot.color
+
+            
+            if pivot == self.root:
+                self.root = old_parent
+            else:
+                old_parent.parent = skuh 
+                if skuh.right == pivot:
+                    skuh.right = old_parent 
+                else:
+                    skuh.left = old_parent
+
+        else:       
+            if pivot != self.root:
+                skuh = pivot.parent 
+            old_parent = pivot.right 
+            pivot.right = old_parent.left 
+            pivot.parent = old_parent
+            old_parent.left = pivot 
+            pivot.color, old_parent.color = old_parent.color, pivot.color
+
+            if pivot == self.root:
+                self.root = old_parent
+            else:
+                old_parent.parent = skuh 
+                if skuh.right == pivot:
+                    skuh.right = old_parent
+                else:
+                    skuh.left = old_parent
+
+
+
+    def _inorder_traversal_helper(self, root: Node) -> List[Node]:
+        if not root:
+            return []
+        return self._inorder_traversal_helper(root.left) + [root] + self._inorder_traversal_helper(root.right)
+
+
+
+
+
+
+
+# LEGACY RED BLACK TREE CODE FOR REFERENCE:
+"""
+from enum import Enum 
+from typing import Optional, List 
 from collections import deque 
 from functools import total_ordering
 from copy import deepcopy 
@@ -445,3 +665,4 @@ class RedBlackTree:
                 return array[i-1]
         except:
             return None 
+"""

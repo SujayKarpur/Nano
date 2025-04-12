@@ -33,7 +33,6 @@ class Cluster:
         """ Initialize the Cluster when the server starts running """
         self.names: List[str] = list_of_databases()
         self.wal = WAL(META_STORAGE_PATH)
-        print(self.names)
         self.current = Database("default") 
         self.len: int = len(self.names)
         self.recover_from_crash()

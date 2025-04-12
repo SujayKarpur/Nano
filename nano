@@ -5,7 +5,6 @@ import asyncio
 import os 
 import shutil 
 
-import database 
 import env 
 import cluster 
 import compact 
@@ -96,7 +95,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 async def main():
 
-    asyncio.create_task(compact.compact())
+    asyncio.create_task(compact.compact()) #asynchronously compact SSTables 
 
     server = await asyncio.start_server(handle_client, env.HOST, env.PORT)
     print("Server is listening")

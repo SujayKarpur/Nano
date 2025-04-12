@@ -2,20 +2,28 @@ from typing import Tuple
 import os 
 
 
-from src.redblacktree import RedBlackTree 
-from src.wal import WAL 
-from src.bloomfilter import BloomFilter
 from src.memtable import Memtable
 from src.sstable import SSTable
 
-from env import FLUSH_SIZE, PATH 
+from env import FLUSH_SIZE, PATH, STORAGE_PATH
 
 
 
 
 def how_many_blocks(name: str) -> int:
     """ how many SSTable data/meta blocks already exist? """
-    return len(list(filter(lambda i : 'sstable_datablock_' in i, os.listdir(os.path.join(PATH + '/storage', name))))) 
+    # logic:
+    #1 - find the directory 
+    #2 - check the number of files in the directory
+    #3 - filter to include only 1 file per logical block 
+    #4 - return the length of that list 
+
+    required_directory = os.path.join(STORAGE_PATH, name)
+    files_in_dir = os.listdir(required_directory)
+    filtered_files = list(filter(lambda i : 'sstable_datablock_' in i, files_in_dir))
+    return len(filtered_files)
+
+    #return len(list(filter(lambda i : 'sstable_datablock_' in i, os.listdir(os.path.join(PATH + '/storage', name))))) 
 
 
 
@@ -27,6 +35,9 @@ class LSMTree:
     """
 
     def __init__(self, name: str) -> None:
+        """
+        Initialize the LSM tree with the parameter `name`, which is the name of the database 
+        """
         self.name = name  
         self.memtable = Memtable(self.name)
         self.sstable = SSTable(self.name, how_many_blocks(self.name))
@@ -46,11 +57,11 @@ class LSMTree:
     def set(self, key: str, value: str) -> bool: 
         """ set database[key] = val """
 
-        inserto = self.memtable.set(key, value) 
+        inserto = self.memtable.set(key, value) #inserto == False iff value == TOMBSTONE (tombstone value, not the string 'TOMBSTONE')
         if not inserto:
             return False 
         if self.memtable.number_of_elements > FLUSH_SIZE:
-            self.sstable.write(self.memtable)
+            self.sstable.flush(self.memtable)
             self.memtable = Memtable(self.name)
         return True 
 

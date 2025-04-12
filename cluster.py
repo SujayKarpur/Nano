@@ -1,9 +1,8 @@
-from typing import List, Optional 
+from typing import List 
 from os import fsync
 
-from src import redblacktree
 from database import Database
-from env import PATH, TOMBSTONE
+from env import PATH, TOMBSTONE, META_STORAGE_PATH
 
 
 
@@ -12,7 +11,7 @@ from env import PATH, TOMBSTONE
 
 
 def list_of_databases() -> List[str]:
-    with open(f'{PATH}/storage/meta/list.txt', 'r') as f:
+    with open(f'{META_STORAGE_PATH}/list.txt', 'r') as f:
         names = [i.rstrip('\n') for i in f.readlines()]
     return names 
 
@@ -22,7 +21,12 @@ def list_of_databases() -> List[str]:
 
 class Cluster:
 
+    """
+    Collection of all Nano databases 
+    """
+
     def __init__(self) -> None: 
+        """ Initialize the Cluster when the server starts running """
         self.names: List[str] = list_of_databases()
         print(self.names)
         self.current = Database("default") 

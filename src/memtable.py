@@ -1,7 +1,6 @@
 from typing import Tuple, List  
 
 from src.redblacktree import RedBlackTree, TraversalType, Node
-from src.bloomfilter import BloomFilter 
 from src.wal import WAL 
 from env import FLUSH_SIZE, TOMBSTONE
 

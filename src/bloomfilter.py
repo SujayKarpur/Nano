@@ -2,13 +2,20 @@ from mmh3 import hash # type: ignore
 from bitarray import bitarray
 
 
-from env import FLUSH_SIZE
-
 
 BITARRAY_SIZE = 10000
 
 
 class BloomFilter:
+
+    """
+    Implementation of a Bloom Filter with the following API 
+
+    BloomFilter() - create an empty bloom filter (optionally, initialize it with a string of bits)
+    insert        - insert a key into the set represented by the bloom filter 
+    __contains__  - check if a key exists in the set; possible false positives 
+    __repr__      - return the bit-string of the bloom  filter 
+    """
 
     def __init__(self, string=None):
         self.n: int = 0  
@@ -34,4 +41,4 @@ class BloomFilter:
         return True 
 
     def __repr__(self) -> str:
-        return self.array.__repr__()
+        return self.array.to01()

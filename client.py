@@ -3,6 +3,7 @@ import asyncio
 
 import env 
 import auth 
+from src.user.user import User 
 
 
 
@@ -22,6 +23,7 @@ def help() -> None:
 
 
 def startup() -> None:
+    auth.logout()
     print("\n\nWelcome to Nano!\n")
     print("Nano is a lightweight, secure key value store with concurrency control")
     print('\n\n')
@@ -72,8 +74,10 @@ async def main():
         if not token:
             print("ERROR: Invalid username or password")
         else:
-            env.current_user = token 
-            print("Logged In successfully :)")
+            with open('cu_token.txt', 'w') as f:
+                print(token, file=f)
+            #env.current_user = User(token) 
+            print(f"Logged In successfully :) w token: {token}")
 
 
     

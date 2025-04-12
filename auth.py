@@ -47,7 +47,7 @@ def login(username: str, password: str) -> str:
         return None 
     
     payload = {"username" : username, "exp" : time.time() + 600}
-    token = jwt.encode(payload, env.SECRET_KEY)
+    token = jwt.encode(payload, env.SECRET_KEY, algorithm='HS256')
 
     return token 
 
@@ -61,18 +61,23 @@ def logout() -> None:
 
 
 
-def authorize(command: str) -> bool:
-    if not env.current_user:
+def authorize(user: User, command: str) -> bool:
+
+    print('check the current user ', user)
+
+    if not user:
         return command in ('exit', '', )
 
-    if env.current_database.name in env.current_user.own():
+    if env.current_database.name in user.own():
         return True 
     
-    if env.current_database.name in env.current_user.modify():
+    if env.current_database.name in user.modify():
         return True 
     
-    if env.current_database.name in env.current_user.write():
+    if env.current_database.name in user.write():
         return command not in ('SHARE', 'DROP')
 
-    if env.current_database.name in env.current_user.read():
-        return command in ('LIST', '', 'exit', 'GET', 'SELECT',)
+    if env.current_database.name in user.read():
+        return command in ('LIST', '', 'exit', 'GET', 'SELECT', 'LOGOUT')
+    
+    return command in ('LIST', '', 'exit', 'LOGOUT', 'SELECT')

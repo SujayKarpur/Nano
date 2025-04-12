@@ -68,7 +68,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     accesses = json.load(f)
 
                 
-                accesses[get_current_db_name()] = permission_level
+                accesses[get_current_db_name()] = int(permission_level)
 
                 with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'w') as f:
                     json.dump(accesses, f)

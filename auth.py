@@ -71,19 +71,20 @@ def authorize(user: User, command: str) -> bool:
 
     current_db = get_current_db_name()
 
-    if not user:
-        return command in ('exit', '', )
-
-    if current_db in user.own():
+    if command in ('exit', '', 'LOGIN'):
         return True 
     
-    if current_db in user.modify():
-        return True 
+    if command in ('LIST', 'LOGOUT', 'SELECT'):
+        return user != None 
     
-    if current_db in user.write():
-        return command not in ('SHARE', 'DROP')
+    if command in ('GET'):
+        return current_db in user.read()
+    
+    if command in ('SET', 'DELETE'):
+        return current_db in user.write()
 
-    if current_db in user.read():
-        return command in ('LIST', '', 'exit', 'GET', 'SELECT', 'LOGOUT')
-    
-    return command in ('LIST', '', 'exit', 'LOGOUT', 'SELECT')
+    if command in ('SHARE', 'DROP', ):
+        return current_db in user.modify()
+
+    if command in ():
+        return current_db in user.own()

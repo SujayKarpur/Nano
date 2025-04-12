@@ -32,14 +32,18 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             command = command.decode()
             comlist = command.split()
 
-
-            auth.authorize(comlist[0])
-
-
             if not command:
                 raise BrokenPipeError()
 
-            if comlist[0] in ('exit', ''):
+
+            can = auth.authorize(comlist[0])
+
+            if not can:
+                message = "ERROR: You do not have the permission to perform that action"
+
+
+
+            elif comlist[0] in ('exit', ''):
                 stores.current.db.shutdown()
                 stores.cleanup()
                 message = 'OK. Exiting Nano............\n'.encode()

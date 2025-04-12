@@ -20,7 +20,7 @@ TOMBSTONE = "__<INTERNAL::TOMBSTONE::v1::42bcf61b>__"
 #the database that is currently in use. tracked to avoid compacting while it is in use 
 current_database = None 
 
-#the user that is currently in use
+#the user that is currently logged in
 current_user = None 
 
 #store all common constant paths here:

@@ -4,7 +4,7 @@ import bcrypt
 import jwt 
 import time 
 
-
+from src.user.user import User 
 import env 
 
 #from env import USER_STORAGE_PATH, SECRET_KEY
@@ -65,8 +65,14 @@ def authorize(command: str) -> bool:
     if not env.current_user:
         return command in ('exit', '', )
 
-    payload = jwt.decode(env.current_user, env.SECRET_KEY)
-    username = payload["username"]
+    if env.current_database.name in env.current_user.own():
+        return True 
+    
+    if env.current_database.name in env.current_user.modify():
+        return True 
+    
+    if env.current_database.name in env.current_user.write():
+        return command not in ('SHARE', 'DROP')
 
-    with open(f'{env.USER_STORAGE_PATH}/{username}.json') as f:
-        access = json.load(f) 
+    if env.current_database.name in env.current_user.read():
+        return command in ('LIST', '', 'exit', 'GET', 'SELECT',)

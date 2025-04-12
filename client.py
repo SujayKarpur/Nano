@@ -1,8 +1,9 @@
 from socket import socket, AF_INET, SOCK_STREAM
 import asyncio 
+import json 
 
 import env 
- 
+import auth 
 
 def help() -> None:
     print("\n\navailable commands:\n")
@@ -28,17 +29,40 @@ def startup() -> None:
 
 
 
+
 async def main():
     startup()
-    reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
-
+    
     user_option = int(input('> '))
 
     while user_option not in (1,2,3):
         print("That is not a valid option")
         print("Please enter a number between 1 and 3")
         user_option = int(input('> '))
+
     
+    if user_option == 2:
+        succ, ret = auth.signup(input('Enter your username: '), input('Enter your password: '))
+
+        if succ:
+            print(ret) 
+        else:
+            while not succ:
+                print(ret)
+                ans = input("Would you like to try again?\n")
+                if ans not in ('y', 'yes'):
+                    exit() 
+                succ, ret = auth.signup(input('Enter your username: '), input('Enter your password: '))
+            else:
+                print(ret)
+                print("To use Nano, run the client again and login with your new credentials")
+                exit()
+
+
+
+    
+
+    reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
 
 
     while True: 

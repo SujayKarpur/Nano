@@ -32,17 +32,19 @@ class Cluster:
     Collection of all Nano databases 
     """
 
-    def __init__(self) -> None: 
+    def __init__(self, user:User = None) -> None: 
         """ Initialize the Cluster when the server starts running """
         self.names: List[str] = list_of_databases()
         self.wal = WAL(env.META_STORAGE_PATH)
-        self.current = Database("default") 
+        self.current = Database("default"+user.username) 
         self.len: int = len(self.names)
-        env.current_database = Database("default")
+        env.current_database = Database("default"+user.username)
         self.recover_from_crash()
 
 
     def __contains__(self, name: str, user: User) -> bool:
+        if name == "default":
+            return True 
         return name in set.intersection(set(self.names), set(user.read()))
 
 
@@ -64,7 +66,7 @@ class Cluster:
 
     def drop(self, name: str, user: User) -> str:
         if name == self.current.name:
-            env.current_database = Database("default")
+            env.current_database = Database("default"+user.username)
             self.current = Database("default")
 
         for i in range(self.len):
@@ -89,7 +91,10 @@ class Cluster:
 
 
     def list(self, user: User) -> str:
-        return '\n'.join(self.names)
+        print('hi i"m in list')
+        print(set(self.names))
+        print(set(user.read()))
+        return '\n'.join(set.intersection(set(self.names), set(user.read())))
 
 
     def select(self, name: str, user: User) -> str:
@@ -118,5 +123,6 @@ class Cluster:
                     databases.add(i)
             #values = [tuple(i.rstrip('\n').split()) for i in f.readlines()]
             #fixed = [x[0] for x in sorted(list(filter(lambda i : len(i) == 1, set(values))))]
-        with open(LIST_PATH, 'w') as f:
-            print('\n'.join(databases), file = f) 
+        with open(LIST_PATH, 'a') as f:
+            if databases:
+                print('\n'.join(databases), file = f) 

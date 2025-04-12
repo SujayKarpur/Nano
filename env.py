@@ -18,10 +18,10 @@ FLUSH_SIZE = 1000
 TOMBSTONE = "__<INTERNAL::TOMBSTONE::v1::42bcf61b>__"
 
 #the database that is currently in use. tracked to avoid compacting while it is in use 
-current_database = None 
+#current_database = None 
 
 #the user that is currently logged in
-current_user = None 
+#current_user = None 
 
 #store all common constant paths here:
 
@@ -34,7 +34,8 @@ USER_STORAGE_PATH: str = f'{STORAGE_PATH}/users'
 META_USER_STORAGE_PATH = f'{USER_STORAGE_PATH}/meta'
 
 
-
+CURRENT_USER = f'{STORAGE_PATH}/cu_token.txt'
+CURRENT_DATABASE = f'{STORAGE_PATH}/cu_db.txt'
 
 
 

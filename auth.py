@@ -30,7 +30,7 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
             json.dump(users, f, indent=2)
 
         with open(f'{env.USER_STORAGE_PATH}/{username}.json', 'w') as f:
-            json.dump({"default" : 4}, f)
+            json.dump({"default" + username : 4}, f)
 
 
         return (True, "SIGNED UP SUCCESSFULLY!!")

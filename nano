@@ -78,7 +78,10 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] == 'LIST':
+                print("trynna list shi here")
                 message = stores.list(user).encode()
+                print("encoded the list message", message.decode())
+
 
 
             elif comlist[0] == 'SELECT':
@@ -99,7 +102,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 else:
                     msg = stores.drop(comlist[1], user)
                     if msg[0] == 'O':
-                        shutil.rmtree(f'{env.PATH}/storage/{comlist[1]}')
+                        shutil.rmtree(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}')
                     
                     message = msg.encode()
 

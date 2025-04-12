@@ -21,5 +21,5 @@ current = None
 #store all common constant paths here:
 
 NANO_ROOT_PATH: str = PATH 
-STORAGE_PATH: str = f'{PATH}/storage/'
-META_STORAGE_PATH: str 
+STORAGE_PATH: str = f'{PATH}/storage'
+META_STORAGE_PATH: str = f'{PATH}/storage/meta'

@@ -1,14 +1,16 @@
 import os 
 
-from src.redblacktree import RedBlackTree 
 from env import PATH 
 
 
 class WAL:
 
-    def __init__(self, name: str):
-        self.name = name 
-        self.file_name = f'{PATH}/storage/{self.name}/wal.log'
+    """
+    Write Ahead Log
+    """
+
+    def __init__(self, directory_path: str):
+        self.file_name = f'{directory_path}/wal.log'
         self.file = open(self.file_name, 'a') 
         self.file_open = True 
     

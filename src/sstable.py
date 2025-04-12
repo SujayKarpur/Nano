@@ -1,12 +1,11 @@
-from typing import List, Tuple 
+from typing import Tuple 
 import linecache
-import asyncio 
 import os 
 
 from src.bloomfilter import BloomFilter 
 from src.memtable import Memtable
 
-from env import PATH, FLUSH_SIZE
+from env import PATH, STORAGE_PATH
 
 
 
@@ -17,10 +16,13 @@ class SSTable:
     def __init__(self, name: str, number_of_blocks: int = 0) -> None:
         self.number_of_blocks = number_of_blocks  
         self.name = name 
+        self.path = f'{STORAGE_PATH}/{self.name}'
+        self.metablockpath = f'{self.path}/sstable_metablock_'
+        self.datablockpath = f'{self.path}/sstable_datablock_'
 
     
     def meta_block_write(self, data: Memtable) -> bool:
-        new_file_name = f'{PATH}/storage/{self.name}/sstable_metablock_{self.number_of_blocks}' 
+        new_file_name = f'{self.metablockpath}{self.number_of_blocks}' 
 
         bf = BloomFilter()
 
@@ -44,7 +46,7 @@ class SSTable:
 
     def data_block_write(self, data: Memtable) -> None:
 
-        new_file_name = f'{PATH}/storage/{self.name}/sstable_datablock_{self.number_of_blocks}' 
+        new_file_name = f'{self.datablockpath}{self.number_of_blocks}' 
 
         with open(new_file_name, 'w') as f:
             for node in data.ordered_list():
@@ -53,7 +55,7 @@ class SSTable:
 
 
     def flush(self, data: Memtable) -> None:
-        self.number_of_blocks = len(os.listdir(f'{PATH}/storage/{self.name}/'))//2
+        self.number_of_blocks = len(os.listdir(self.path))//2
         should = self.meta_block_write(data)
         if should:
             self.data_block_write(data)
@@ -63,7 +65,7 @@ class SSTable:
     def find_in_data_block(self, key: str, n: int) -> Tuple[bool,str]:
         #perform a binary search 
 
-        current_file_name = f'{PATH}/storage/{self.name}/sstable_datablock_{self.current_block}'
+        current_file_name = f'{self.datablockpath}{self.current_block}'
 
         low = 1; high = n
 
@@ -86,7 +88,7 @@ class SSTable:
 
 
     def find_in_meta_block(self, key: str) -> Tuple[bool,str]:
-        current_file_name = f'{PATH}/storage/{self.name}/sstable_metablock_{self.current_block}'
+        current_file_name = f'{self.metablockpath}{self.current_block}'
         with open(current_file_name, 'r') as f:
             contents = [i.rstrip('\n') for i in f.readlines()]
             filter_string = contents[0]
@@ -113,7 +115,7 @@ class SSTable:
     
 
     def get(self, key: str) -> Tuple[bool,str]:
-        for x in os.listdir(f'{PATH}/storage/{self.name}/'):
+        for x in os.listdir(self.path):
             if x != 'wal.log':
                 block_number = x.split('_')[-1]
                 exists, value = self.find_in_block(block_number, key)

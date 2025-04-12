@@ -2,7 +2,7 @@ from typing import Tuple, List
 
 from src.redblacktree import RedBlackTree, TraversalType, Node
 from src.wal import WAL 
-from env import FLUSH_SIZE, TOMBSTONE
+from env import FLUSH_SIZE, TOMBSTONE, STORAGE_PATH
 
 
 
@@ -11,7 +11,7 @@ class Memtable:
     def __init__(self, name: str):
         self.name = name 
         self.data = RedBlackTree()
-        self.wal = WAL(self.name)
+        self.wal = WAL(f'{STORAGE_PATH}/{self.name}')
         self.number_of_elements = 0 
 
 

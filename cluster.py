@@ -1,17 +1,21 @@
 from typing import List 
 from os import fsync
+from bisect import insort, bisect 
 
+from src.wal import WAL 
 from database import Database
 from env import PATH, TOMBSTONE, META_STORAGE_PATH
 
 
 
+LIST_PATH = f'{META_STORAGE_PATH}/list.txt'
+LOG_PATH = f'{META_STORAGE_PATH}/wal.log'
 
 
 
 
 def list_of_databases() -> List[str]:
-    with open(f'{META_STORAGE_PATH}/list.txt', 'r') as f:
+    with open(LIST_PATH, 'r') as f:
         names = [i.rstrip('\n') for i in f.readlines()]
     return names 
 
@@ -28,6 +32,7 @@ class Cluster:
     def __init__(self) -> None: 
         """ Initialize the Cluster when the server starts running """
         self.names: List[str] = list_of_databases()
+        self.wal = WAL(META_STORAGE_PATH)
         print(self.names)
         self.current = Database("default") 
         self.len: int = len(self.names)
@@ -41,9 +46,7 @@ class Cluster:
     def create(self, name: str) -> str:
         self.names.append(name)
         self.len += 1 
-        with open(f'{PATH}/storage/meta/wal.log', 'a') as f:
-            print(name, file=f, flush = True)
-            fsync(f.fileno())
+        self.wal.write(name)
         return f"OK. Created new database {name}"
 
 
@@ -55,9 +58,7 @@ class Cluster:
             if self.names[i] == name:
                 self.names.pop(i)
                 self.len -= 1 
-                with open(f'{PATH}/storage/meta/wal.log', 'a') as f:
-                    print(name, TOMBSTONE, file=f, flush = True)
-                    fsync(f.fileno())
+                self.wal.write(f'{name} {TOMBSTONE}')
                 return f"OK. Deleted database {name}"
         else:
             return f"ERROR: No database {name} exists"
@@ -78,15 +79,19 @@ class Cluster:
         
 
     def cleanup(self) -> None:
-        with open(f'{PATH}/storage/meta/list.txt', 'w') as f:
+        with open(LIST_PATH, 'w') as f:
             self.names = sorted(set(self.names))
             print('\n'.join(self.names), file = f) 
-        f = open(f'{PATH}/storage/meta/wal.log', 'w')
-        f.close()
+        self.wal.reset()
 
     def recover_from_crash(self) -> None:
-        with open(f'{PATH}/storage/meta/wal.log','r') as f:
-            values = [tuple(i.rstrip('\n').split()) for i in f.readlines()]
-            fixed = [x[0] for x in sorted(list(filter(lambda i : len(i) == 1, set(values))))]
-        with open(f'{PATH}/storage/meta/list.txt', 'w') as f:
-            print('\n'.join(fixed), file = f) 
+        with open(LOG_PATH,'r') as f:
+            lines = [i.rstrip('\n') for i in f.readlines()]
+            databases = set()
+            for i in lines:
+                if len(i.split()) == 1:
+                    databases.add(i)
+            #values = [tuple(i.rstrip('\n').split()) for i in f.readlines()]
+            #fixed = [x[0] for x in sorted(list(filter(lambda i : len(i) == 1, set(values))))]
+        with open(LIST_PATH, 'w') as f:
+            print('\n'.join(databases), file = f) 

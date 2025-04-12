@@ -1,4 +1,4 @@
-from src.lsm import LSMTree
+from src.database.lsm import LSMTree
 
 
 class Database:

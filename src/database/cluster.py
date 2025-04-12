@@ -2,14 +2,15 @@ from typing import List
 from os import fsync
 from bisect import insort, bisect 
 
-from src.wal import WAL 
-from database import Database
-from env import PATH, TOMBSTONE, META_STORAGE_PATH
+from src.database.wal import WAL 
+from src.database.database import Database
+
+import env
 
 
 
-LIST_PATH = f'{META_STORAGE_PATH}/list.txt'
-LOG_PATH = f'{META_STORAGE_PATH}/wal.log'
+LIST_PATH = f'{env.META_STORAGE_PATH}/list.txt'
+LOG_PATH = f'{env.META_STORAGE_PATH}/wal.log'
 
 
 
@@ -32,9 +33,10 @@ class Cluster:
     def __init__(self) -> None: 
         """ Initialize the Cluster when the server starts running """
         self.names: List[str] = list_of_databases()
-        self.wal = WAL(META_STORAGE_PATH)
+        self.wal = WAL(env.META_STORAGE_PATH)
         self.current = Database("default") 
         self.len: int = len(self.names)
+        env.current_database = "default"
         self.recover_from_crash()
 
 
@@ -51,13 +53,14 @@ class Cluster:
 
     def drop(self, name: str) -> str:
         if name == self.current.name:
+            env.current_database = "default"
             self.current = Database("default")
 
         for i in range(self.len):
             if self.names[i] == name:
                 self.names.pop(i)
                 self.len -= 1 
-                self.wal.write(f'{name} {TOMBSTONE}')
+                self.wal.write(f'{name} {env.TOMBSTONE}')
                 return f"OK. Deleted database {name}"
         else:
             return f"ERROR: No database {name} exists"
@@ -72,6 +75,7 @@ class Cluster:
             if i == name:
                 self.current.db.shutdown()
                 self.current = Database(i)
+                env.current_database = i
                 return f"OK. Selected database {i}"
         else:
             return f"ERROR: No database {name} exists"

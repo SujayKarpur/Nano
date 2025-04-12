@@ -43,7 +43,7 @@ async def compact() -> None:
     while True: 
         for name in os.listdir('./storage'):
             path = os.path.join('./storage', name)
-            if os.path.isdir(path) and name != env.current:
+            if os.path.isdir(path) and name != env.current_database:
                 s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))
                 if len(s) > 0:
                     for indexo in range(len(s)):
@@ -67,5 +67,5 @@ async def compact() -> None:
 
 
 if __name__ == '__main__':
-    env.current = None 
+    env.current_database = None 
     asyncio.run(compact())

@@ -2,10 +2,10 @@ from typing import Tuple
 import linecache
 import os 
 
-from src.bloomfilter import BloomFilter 
-from src.memtable import Memtable
+from src.database.bloomfilter import BloomFilter 
+from src.database.memtable import Memtable
 
-from env import PATH, STORAGE_PATH
+from env import DATABASE_STORAGE_PATH
 
 
 
@@ -16,7 +16,7 @@ class SSTable:
     def __init__(self, name: str, number_of_blocks: int = 0) -> None:
         self.number_of_blocks = number_of_blocks  
         self.name = name 
-        self.path = f'{STORAGE_PATH}/{self.name}'
+        self.path = f'{DATABASE_STORAGE_PATH}/{self.name}'
         self.metablockpath = f'{self.path}/sstable_metablock_'
         self.datablockpath = f'{self.path}/sstable_datablock_'
 

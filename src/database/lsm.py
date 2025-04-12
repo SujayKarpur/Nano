@@ -2,10 +2,10 @@ from typing import Tuple
 import os 
 
 
-from src.memtable import Memtable
-from src.sstable import SSTable
+from src.database.memtable import Memtable
+from src.database.sstable import SSTable
 
-from env import FLUSH_SIZE, PATH, STORAGE_PATH
+from env import FLUSH_SIZE, DATABASE_STORAGE_PATH
 
 
 
@@ -18,7 +18,7 @@ def how_many_blocks(name: str) -> int:
     #3 - filter to include only 1 file per logical block 
     #4 - return the length of that list 
 
-    required_directory = os.path.join(STORAGE_PATH, name)
+    required_directory = os.path.join(DATABASE_STORAGE_PATH, name)
     files_in_dir = os.listdir(required_directory)
     filtered_files = list(filter(lambda i : 'sstable_datablock_' in i, files_in_dir))
     return len(filtered_files)

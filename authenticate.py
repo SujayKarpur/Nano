@@ -39,8 +39,11 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
 
 def login(username: str, password: str) -> str:
     
-    with open(USERS_FILE, 'r') as f:
-        users = json.load(f) 
+    try:
+        with open(USERS_FILE, 'r') as f:
+            users = json.load(f) 
+    except json.JSONDecodeError:
+        return 'E'
 
     if username not in users:
         return "ERROR: Invalid username" 

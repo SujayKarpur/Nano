@@ -6,7 +6,6 @@ import sys
 import asyncio 
 
 from server import env 
-from server import auth 
 
 import authenticate 
 
@@ -106,13 +105,36 @@ async def main():
     print("Nano is a lightweight, secure key value store with concurrency control")
     print('\n\n')
 
-    if len(sys.argv) > 2:
+    if len(sys.argv) > 3:
         print("Invalid usage")
-        print("Try :  ./nano [signup]")
+        print("Try :  ./nano [signup] or ./nano [username] [password]")
         sys.exit()
 
+    
+    if len(sys.argv) == 3:
+        username = sys.argv[1]
+        password = sys.argv[2]
 
-    if len(sys.argv) > 1:
+        s = authenticate.login(username, password)
+        if s[0] == 'E':
+            print(s)
+            choice = input("Do you want to try again? Enter yes/no: ")
+            while choice.casefold() not in ('yes', 'no'):
+                print("That is not a valid answer!")
+                choice = input("Please reply with yes/no only: ")
+            if choice.casefold() == 'yes':
+                print("OK. Trying LOGIN again......\n")
+                try:
+                    login_flow()
+                except RecursionError:
+                    print("Sorry, you entered invalid credentials too many times")
+                    print("Try again later!")
+                    print("Exiting...")
+            else:
+                sys.exit()        
+
+
+    if len(sys.argv) == 2:
         if sys.argv[1] in ('SIGNUP', 'signup', 'sign'):
             signup_flow()
         else:

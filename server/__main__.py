@@ -5,7 +5,6 @@ import jwt
 from server import env 
 import server.database.cluster as cluster 
 from server import compact 
-from server.statehandler import get_current_db_name
 
 
 

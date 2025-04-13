@@ -53,9 +53,6 @@ class Cluster:
 
         self.names: Set[str] = list_of_databases(self.LIST_PATH)
         self.shared_names: Set[str] = list_of_databases(self.LIST2_PATH)
-
-
-        self.wal = WAL(self.META_STORAGE_PATH)
         
 
         self.current = Database(self.default_name) 
@@ -74,7 +71,6 @@ class Cluster:
             return f"Void. Database {name} already exists"
 
         self.names.add(name)
-        self.wal.write(name)
 
         with open(self.LIST_PATH, 'r') as f:
             dbs = json.load(f) 
@@ -127,8 +123,6 @@ class Cluster:
 
         self.names.remove(name)
 
-        self.wal.write(f'{name} {env.TOMBSTONE}')
-
         with open(self.LIST_PATH, 'r') as f:
             dbs = json.load(f) 
         
@@ -136,6 +130,19 @@ class Cluster:
 
         with open(self.LIST_PATH, 'w') as f:
             dbs = json.dump(dbs, f, indent=2)
+
+
+        with open(f'{env.STORAGE_PATH}/users.json', 'r') as f:
+            user_list = json.load(f)
+
+        for u in user_list:
+            with open(f'{env.STORAGE_PATH}/{u}/meta/shared.json', 'r') as f:
+                dbs = json.load(f) 
+            
+            if name in dbs:
+                dbs.pop(name)
+                with open(f'{env.STORAGE_PATH}/{u}/meta/shared.json', 'w') as f:
+                    dbs = json.dump(dbs, f, indent=2)
 
         return f"OK. Deleted database {name}"
             
@@ -164,13 +171,24 @@ class Cluster:
         if self.current:
             self.current.shutdown()
 
-        self.wal.reset()
-
-
 
     def startup(self) -> None:
         pass 
 
 
     def authorize(self, command: str, optional: int) -> bool:
-        pass  
+        
+        if command in ('help', 'exit'):
+            return True 
+
+        if command in ('LIST', 'CREATE', 'SELECT'):
+            return True 
+
+        if command in ('GET'):
+            return 
+
+        if command in ('SET', 'DELETE'):
+            return 
+
+        if command in ('DROP', 'SHARE'):
+            return  

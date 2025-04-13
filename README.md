@@ -55,6 +55,9 @@ Creates a database.
 `DROP <database>`  
 Drops a database.
 
+`SHARE <username> <permission_level>`  
+Grants another user permissions to read/write/share the selected database.
+
 `SELECT <database>`  
 Selects a database.
 

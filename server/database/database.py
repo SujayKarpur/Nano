@@ -36,6 +36,8 @@ class Database:
 
     def get(self, key: str) -> str:
         """ Database[key] """
+
+        print('WAIT  GETTIN KEYYYY')
         exists, value = self.db.get(key)
 
         if exists:

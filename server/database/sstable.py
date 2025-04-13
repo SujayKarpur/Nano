@@ -113,10 +113,11 @@ class SSTable:
     
 
     def get(self, key: str) -> Tuple[bool,str]:
-        for x in os.listdir(self.path):
-            if x != 'wal.log':
-                block_number = x.split('_')[-1]
-                exists, value = self.find_in_block(block_number, key)
-                if exists:
-                    return exists, value 
+        all_in_path = list(filter(lambda i : i != 'wal.log', os.listdir(self.path)))
+        all_in_path.sort(key = lambda i : i.split('_')[-1], reverse = True)
+        for x in all_in_path: 
+            block_number = x.split('_')[-1]
+            exists, value = self.find_in_block(block_number, key)
+            if exists:
+                return exists, value 
         return (False, '')  

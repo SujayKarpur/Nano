@@ -28,7 +28,7 @@ def merge(path, file_1, file_2) -> None:
             a.append(f"{v[y][0]} {v[y][1]}")
             y += 1 
 
-        if u[x][0] == v[y][0]:
+        else:
             for string in a:
                 if string.split()[0] == u[x][0]:
                     break
@@ -55,6 +55,7 @@ async def compact() -> None:
     
 
     while True:
+        print('hey')
         for user in os.listdir(USRPATH):
 
             if not os.path.isdir(os.path.join(USRPATH, user)):
@@ -96,7 +97,7 @@ async def compact() -> None:
 
 
             if __name__ != '__main__':
-                await asyncio.sleep(5)
+                await asyncio.sleep(2)
 
 
 if __name__ == '__main__':

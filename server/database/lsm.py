@@ -70,10 +70,12 @@ class LSMTree:
     def get(self, key: str) -> Tuple[bool,str]:
         """ get database[key] if it exists """
 
+        print('CHECKING MEMTABLE')
         exists, value = self.memtable.get(key)
         if exists:
             return exists, value 
         else:
+            print("CHECKING SSTABLE!!")
             return self.sstable.get(key)
 
 

@@ -1,5 +1,5 @@
 import json 
-import jwt 
+from typing import List, Set 
 
 
 from server.env import STORAGE_PATH, SECRET_KEY
@@ -14,20 +14,36 @@ STATE_FILE = f'{STORAGE_PATH}/state.json'
 
 
 
+def initialize() -> None:
+    s = {"current_databases" : None}
+    with open(STATE_FILE, 'w') as f:
+        json.dump(s,f,indent=2)
 
 
 
-def get_current_db_name() -> str:
+
+def get_current_databases() -> Set[str]:
     with open(STATE_FILE, 'r') as f:
         data = json.load(f) 
-    return data["current_database"]
+    return set(data["current_databases"])
 
 
-def set_current_db_name(name: str) -> None:
+
+def add_current_database(name: str) -> None:
     with open(STATE_FILE, 'r') as f:
         data = json.load(f)
     
-    data["current_database"] = name 
+    data["current_database"].append(name)
+
+    with open(STATE_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+
+def remove_current_database(name: str) -> None:
+    with open(STATE_FILE, 'r') as f:
+        data = json.load(f)
+    
+    data["current_database"].remove(name)
 
     with open(STATE_FILE, 'w') as f:
         json.dump(data, f, indent=2)

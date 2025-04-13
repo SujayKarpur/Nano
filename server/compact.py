@@ -3,7 +3,7 @@ import asyncio
 from typing import List 
 
 
-from server.statehandler import get_current_db_name
+from server.statehandler import get_current_databases
 
 
 
@@ -61,7 +61,7 @@ async def compact() -> None:
 
             for name in os.listdir(dbpath):
                 path = os.path.join(dbpath, name)
-                if os.path.isdir(path) and name != get_current_db_name():
+                if os.path.isdir(path) and name not in get_current_databases():
                     s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))
                     if len(s) > 0:
                         for indexo in range(len(s)):

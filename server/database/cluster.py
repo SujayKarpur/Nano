@@ -5,13 +5,10 @@ from bisect import insort, bisect
 import json 
 import jwt 
  
-
-from server.database.wal import WAL 
 from server.database.database import Database
 from server.user.user import User 
 
-
-from server.statehandler import get_current_db_name, set_current_db_name
+from server.statehandler import add_current_database, remove_current_database
 
 from server import env
 
@@ -19,7 +16,7 @@ from server import env
 
 
 
-def list_of_databases(LIST_PATH) -> Dict[str, List[int, str]]:
+def list_of_databases(LIST_PATH) -> Dict[str, List]:
     with open(LIST_PATH, 'r') as f:
         data = json.load(f)
     return data 
@@ -57,7 +54,7 @@ class Cluster:
         
 
         self.current = Database(self.default_name) 
-        set_current_db_name(self.default_name)
+        add_current_database(self.default_name)
 
 
 
@@ -115,7 +112,8 @@ class Cluster:
             return "ERROR: Can't delete default database"
 
         if name == self.current.name:
-            set_current_db_name(self.default_name)
+            remove_current_database(name)
+            add_current_database(self.default_name)
             self.current = Database(self.default_name)
             return f"OK. Deleted database {name}"
 
@@ -167,8 +165,9 @@ class Cluster:
             return f"ERROR: No database {name} exists"
 
         self.current.shutdown()
+        remove_current_database(self.current.name)
         self.current = Database(name)
-        set_current_db_name(name)
+        add_current_database(name)
         return f"OK. Selected database {name}"
         
 

@@ -39,7 +39,6 @@ class Cluster:
         self.token = token 
         self.username = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])["username"] 
         self.user = User(self.username)
-        self.default_name = "default" + self.username 
 
 
         self.STORAGE_PATH = f'{env.STORAGE_PATH}/{self.username}'
@@ -53,8 +52,8 @@ class Cluster:
         self.shared_names: Set[str] = list_of_databases(self.LIST2_PATH)
         
 
-        self.current = Database(self.username, self.default_name) 
-        add_current_database(self.default_name)
+        self.current = Database(self.username, "default") 
+        add_current_database("default")
 
 
 
@@ -188,7 +187,7 @@ class Cluster:
         pass 
 
 
-    def authorize(self, command: str, optional: int) -> bool:
+    def authorize(self, command: str, optional: int = 0) -> bool:
         
         if command in ('help', 'exit'):
             return True 
@@ -197,6 +196,8 @@ class Cluster:
             return True 
 
         if command in ('SET', 'DELETE'):
+            
+            print(self.names)
 
             if self.current.name in self.names:
                 return True  

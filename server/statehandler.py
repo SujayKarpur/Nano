@@ -15,7 +15,7 @@ STATE_FILE = f'{PATH}/server/state.json'
 
 
 def initialize() -> None:
-    s = {"current_databases" : None}
+    s = {"current_databases" : []}
     with open(STATE_FILE, 'w') as f:
         json.dump(s,f,indent=2)
 
@@ -25,6 +25,10 @@ def initialize() -> None:
 def get_current_databases() -> Set[str]:
     with open(STATE_FILE, 'r') as f:
         data = json.load(f) 
+    
+    if not data:
+        return set()
+    
     return set(data["current_databases"])
 
 
@@ -33,7 +37,10 @@ def add_current_database(name: str) -> None:
     with open(STATE_FILE, 'r') as f:
         data = json.load(f)
     
-    data["current_database"].append(name)
+    try:
+        data["current_databases"].append(name)
+    except:
+        data["current_databases"] = [name]
 
     with open(STATE_FILE, 'w') as f:
         json.dump(data, f, indent=2)
@@ -43,7 +50,10 @@ def remove_current_database(name: str) -> None:
     with open(STATE_FILE, 'r') as f:
         data = json.load(f)
     
-    data["current_database"].remove(name)
+    try:
+        data["current_databases"].remove(name)
+    except:
+        pass 
 
     with open(STATE_FILE, 'w') as f:
         json.dump(data, f, indent=2)

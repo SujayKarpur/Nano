@@ -41,10 +41,11 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 raise BrokenPipeError()
             
 
-            can = stores.authorize(command)
+            can = stores.authorize(comlist[0])
 
             
             if not can:
+                print(can, stores.names)
                 message = "ERROR. Permission Denied".encode() 
 
 

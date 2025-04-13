@@ -41,18 +41,6 @@ Displays help menu.
 `exit`  
 Exits the session.
 
----
-
-### <span style="color:#28a745;">Auth</span>
----
-`LOGIN <username> <password>`  
-Logs in the user.
-
-`LOGOUT`  
-Logs out the user.
-
-`SIGNUP <username> <password>`  
-Registers a new user.
 
 ---
 

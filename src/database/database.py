@@ -11,6 +11,15 @@ class Database:
         """ Initialize the database with its name """
         self.db = LSMTree(name)
         self.name = name 
+        #self.startup()
+
+
+    def startup(self) -> None:
+        self.db.startup() 
+
+
+    def shutdown(self) -> None:
+        self.db.shutdown() 
 
 
     def set(self, key: str, value: str) -> str:

@@ -61,20 +61,26 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
             
             elif comlist[0] == 'SHARE':
-                share_to_user_uname = comlist[1]
-                permission_level = comlist[2]
 
-                with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'r') as f:
-                    accesses = json.load(f)
+                if "default" in get_current_db_name():
+                    message = f"ERROR. Can't share default database".encode()
 
                 
-                accesses[get_current_db_name()] = int(permission_level)
+                else:
+                    share_to_user_uname = comlist[1]
+                    permission_level = comlist[2]
 
-                with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'w') as f:
-                    json.dump(accesses, f)
+                    with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'r') as f:
+                        accesses = json.load(f)
+
+                    
+                    accesses[get_current_db_name()] = int(permission_level)
+
+                    with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'w') as f:
+                        json.dump(accesses, f)
 
 
-                message = f"OK. Granted user {share_to_user_uname} permission level {permission_level}".encode()
+                    message = f"OK. Granted user {share_to_user_uname} permission level {permission_level}".encode()
 
 
 

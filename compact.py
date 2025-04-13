@@ -2,7 +2,6 @@ import os
 import asyncio 
 from typing import List 
 
-import env 
 
 from storage.statehandler import get_current_db_name
 

@@ -38,4 +38,4 @@ META_USER_STORAGE_PATH = f'{USER_STORAGE_PATH}/meta'
 
 
 # secret key for jwt 
-SECRET_KEY = 'fba3ec6d931431cb05ea064d0569a513cb04a9a4595319dfc188bba7a07b4d42'
+SECRET_KEY = 'fba3ec6d931431cb05ea064d0569a513cb04a9a4595319dfc188bba7a07b4d42' #fix github leak issue late r

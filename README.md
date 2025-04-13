@@ -13,17 +13,22 @@ Set up and activate a python virtual environment
 ```sh
 $ python3 -m venv venv
 $ source venv/bin/activate
+```
+
+Installs and Permissions...
+```sh
 $ pip install -r requirements.txt
+$ sudo chmod +x nano
 ```
 
 Start the server
 ```sh
-$ ./nano
+$ python -m server 
 ```
 
 Open a new tab and run the client
 ```sh
-$ python client.py
+$ ./nano
 ```
 
 ## API

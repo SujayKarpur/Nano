@@ -27,7 +27,6 @@ def help() -> None:
 
 
 def startup() -> None:
-    auth.logout()
     print("\n\nWelcome to Nano!\n")
     print("Nano is a lightweight, secure key value store with concurrency control")
     print('\n\n')
@@ -116,22 +115,12 @@ async def main():
         password = sys.argv[2]
 
         s = authenticate.login(username, password)
+
         if s[0] == 'E':
             print(s)
-            choice = input("Do you want to try again? Enter yes/no: ")
-            while choice.casefold() not in ('yes', 'no'):
-                print("That is not a valid answer!")
-                choice = input("Please reply with yes/no only: ")
-            if choice.casefold() == 'yes':
-                print("OK. Trying LOGIN again......\n")
-                try:
-                    login_flow()
-                except RecursionError:
-                    print("Sorry, you entered invalid credentials too many times")
-                    print("Try again later!")
-                    print("Exiting...")
-            else:
-                sys.exit()        
+            sys.exit()
+        else:
+            token = s[1:]
 
 
     if len(sys.argv) == 2:

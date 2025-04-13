@@ -102,11 +102,8 @@ Nano implements a basic in-memory key-value store using python dictionaries that
 
 ## VII. Security 
 
-## VIII. Rewrite in Go
+## VIII. Future Improvements
 
-## IX. Distribute 
-
-## X. Future Improvements
 
 ---
 

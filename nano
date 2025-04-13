@@ -43,6 +43,7 @@ def signup_flow() -> None:
     success, ret = authenticate.signup(username, password)
 
     if not success:
+        print(ret)
         choice = input("Do you want to try again? Enter yes/no: ")
         while choice.casefold() not in ('yes', 'no'):
             print("That is not a valid answer!")

@@ -48,8 +48,8 @@ class Cluster:
         self.LOG_PATH = f'{self.META_STORAGE_PATH}/wal.log'
 
 
-        self.names: Set[str] = list_of_databases(self.LIST_PATH)
-        self.shared_names: Set[str] = list_of_databases(self.LIST2_PATH)
+        self.names: Dict[str,List] = list_of_databases(self.LIST_PATH)
+        self.shared_names: Dict[str,List] = list_of_databases(self.LIST2_PATH)
         
 
         self.current = Database(self.username, "default") 
@@ -67,7 +67,7 @@ class Cluster:
         if name in self.names: 
             return f"Void. Database {name} already exists"
 
-        self.names.add(name)
+        self.names[name] = [4, self.username]
 
         with open(self.LIST_PATH, 'r') as f:
             dbs = json.load(f) 
@@ -103,6 +103,7 @@ class Cluster:
             json.dump(accesses, f)
 
 
+        return f"OK. Granted {username} permission level {permission_level} in database {self.current.name}"
 
 
     def drop(self, name: str) -> str:
@@ -112,15 +113,15 @@ class Cluster:
 
         if name == self.current.name:
             remove_current_database(name)
-            add_current_database(self.default_name)
-            self.current = Database(self.username, self.default_name)
+            add_current_database("default")
+            self.current = Database(self.username, "default")
             return f"OK. Deleted database {name}"
 
         if name not in self.names:
             return f"ERROR: No database {name} exists"
         
 
-        self.names.remove(name)
+        self.names.pop(name)
 
         with open(self.LIST_PATH, 'r') as f:
             dbs = json.load(f) 

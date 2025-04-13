@@ -26,6 +26,12 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
     hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
     users[username] = hashed_password
 
+
+    os.makedirs(f'{env.STORAGE_PATH}/{username}', exist_ok = True)
+    os.makedirs(f'{env.STORAGE_PATH}/{username}/databases/default', exist_ok=True)
+    os.makedirs(f'{env.STORAGE_PATH}/{username}/meta', exist_ok=True)
+
+
     with open(USERS_FILE, 'w') as f:
         json.dump(users, f, indent=2)
 
@@ -35,9 +41,6 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
     with open(f'{env.STORAGE_PATH}/{username}/meta/shared.json', 'w') as f:
         json.dump({}, f)
 
-    os.makedirs(f'{env.STORAGE_PATH}/{username}', exist_ok = True)
-    os.makedirs(f'{env.STORAGE_PATH}/{username}/databases/default', exist_ok=True)
-    os.makedirs(f'{env.STORAGE_PATH}/{username}/meta', exist_ok=True)
 
     return (True, "SIGNED UP SUCCESSFULLY!!")
 

@@ -36,7 +36,7 @@ class Cluster:
     Collection of all Nano databases 
     """
 
-    def __init__(self) -> None: 
+    def __init__(self, username: str) -> None: 
         """ Initialize the Cluster when the server starts running """
         self.startup()
         self.names: List[str] = list_of_databases()
@@ -45,9 +45,7 @@ class Cluster:
         self.wal = WAL(env.META_STORAGE_PATH)
         self.len: int = len(self.names)
 
-        self.username = self.name = self.current = self.user = None 
 
-    def set_user(self, username: str) -> None:
         self.username = username 
         new_name = "default"+self.username
 

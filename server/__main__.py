@@ -3,6 +3,7 @@ import asyncio
 import os 
 import shutil 
 import json 
+import jwt 
 
 from server import env 
 import server.database.cluster as cluster 
@@ -21,8 +22,20 @@ async def write_message(writer: asyncio.StreamWriter, message: str):
 
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
 
-    addr = writer.get_extra_info('peername')
-    print(f"Client {addr} joined :)")
+    #addr = writer.get_extra_info('peername')
+    #print(f"Client {addr} joined :)")
+
+    init = await reader.read(1024)
+    # do stuff here 
+    token = init.decode()
+
+    payload = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])
+    username = payload["username"]
+    await write_message(writer, f"Welcome to Nano, {username}!".encode())
+    print(f"user {username} logged in :)")
+
+    stores = cluster.Cluster(username)
+
 
 
     try:
@@ -40,8 +53,6 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             user = User(username)
             can = auth.authorize(user, comlist[0])
 
-            if username != stores.username and username != None:
-                stores.set_user(username)
 
 
             if not can:
@@ -56,21 +67,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 #stores.current.db.shutdown()
                 stores.shutdown()
                 message = 'OK. Exiting Nano............\n'.encode()
-                print(f"Client {addr} left :(")
-
-
-
-            elif comlist[0] == 'LOGIN':
-                message = auth.login(comlist[1], comlist[2]).encode()
-
-
-            elif comlist[0] == 'LOGOUT':
-                stores.current.db.shutdown()
-                message = auth.logout().encode()
-
-
-            elif comlist[0] == 'SIGNUP':
-                message = auth.signup(comlist[1], comlist[2]).encode()
+                #print(f"Client {addr} left :(")
 
 
             
@@ -175,6 +172,6 @@ async def main():
 
 
 if __name__ == '__main__':
-    stores = cluster.Cluster()
+    #stores = cluster.Cluster()
     #env.current = stores.current
     asyncio.run(main())

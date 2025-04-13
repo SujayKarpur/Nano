@@ -127,8 +127,16 @@ async def main():
             signup_flow()
 
 
-    
+
     reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
+
+    init = token
+
+    writer.write(init.encode())
+    await writer.drain()
+    
+    confirm = await reader.read(1024)
+    print(confirm.decode())
 
 
     while True: 

@@ -53,7 +53,7 @@ class Cluster:
         self.shared_names: Set[str] = list_of_databases(self.LIST2_PATH)
         
 
-        self.current = Database(self.default_name) 
+        self.current = Database(self.username, self.default_name) 
         add_current_database(self.default_name)
 
 
@@ -114,7 +114,7 @@ class Cluster:
         if name == self.current.name:
             remove_current_database(name)
             add_current_database(self.default_name)
-            self.current = Database(self.default_name)
+            self.current = Database(self.username, self.default_name)
             return f"OK. Deleted database {name}"
 
         if name not in self.names:
@@ -161,12 +161,19 @@ class Cluster:
         if name == self.current.name:
             return f"Void. Already in database {name}"
         
-        if name not in self.names:
+        if name not in (self.names | self.shared_names):
             return f"ERROR: No database {name} exists"
+        
 
         self.current.shutdown()
         remove_current_database(self.current.name)
-        self.current = Database(name)
+        
+        if name in self.names:
+            self.current = Database(self.username, name)
+        
+        else:
+            self.current = Database(self.shared_names[name][1], name)
+
         add_current_database(name)
         return f"OK. Selected database {name}"
         

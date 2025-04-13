@@ -11,28 +11,35 @@ USERS_FILE = f'{env.STORAGE_PATH}/users.json'
 
 
 def signup(username: str, password: str) -> Tuple[bool, str]:
+
+    try:
+        with open(USERS_FILE, 'r') as f:
+            users = json.load(f) 
+
+        if username in users:
+            return (False, "ERROR: That username already exists")
     
-    with open(USERS_FILE, 'r') as f:
-        users = json.load(f) 
-
-    if username in users:
-        return (False, "ERROR: That username already exists")
+    except:
+        users = dict() 
     
-    else:
-        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-        users[username] = hashed_password
+    
+    hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    users[username] = hashed_password
 
-        with open(USERS_FILE, 'w') as f:
-            json.dump(users, f, indent=2)
+    with open(USERS_FILE, 'w') as f:
+        json.dump(users, f, indent=2)
 
-        with open(f'{env.STORAGE_PATH}/{username}.json', 'w') as f:
-            json.dump({"default" : 4}, f)
+    with open(f'{env.STORAGE_PATH}/{username}/meta/local.json', 'w') as f:
+        json.dump({"default" : 4}, f)
 
-        os.makedirs(f'{env.STORAGE_PATH}/{username}', exist_ok = True)
-        os.makedirs(f'{env.STORAGE_PATH}/{username}/databases/default', exist_ok=True)
-        os.makedirs(f'{env.STORAGE_PATH}/{username}/meta', exist_ok=True)
+    with open(f'{env.STORAGE_PATH}/{username}/meta/shared.json', 'w') as f:
+        json.dump({}, f)
 
-        return (True, "SIGNED UP SUCCESSFULLY!!")
+    os.makedirs(f'{env.STORAGE_PATH}/{username}', exist_ok = True)
+    os.makedirs(f'{env.STORAGE_PATH}/{username}/databases/default', exist_ok=True)
+    os.makedirs(f'{env.STORAGE_PATH}/{username}/meta', exist_ok=True)
+
+    return (True, "SIGNED UP SUCCESSFULLY!!")
 
 
 

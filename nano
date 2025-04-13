@@ -110,7 +110,8 @@ async def main():
         sys.exit()
 
     
-    if len(sys.argv) == 3:
+    elif len(sys.argv) == 3:
+
         username = sys.argv[1]
         password = sys.argv[2]
 
@@ -123,7 +124,7 @@ async def main():
             token = s[1:]
 
 
-    if len(sys.argv) == 2:
+    elif len(sys.argv) == 2:
         if sys.argv[1] in ('SIGNUP', 'signup', 'sign'):
             signup_flow()
         else:

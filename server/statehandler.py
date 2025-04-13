@@ -2,7 +2,7 @@ import json
 from typing import List, Set 
 
 
-from server.env import STORAGE_PATH, SECRET_KEY
+from server.env import PATH 
 
 
 
@@ -10,7 +10,7 @@ from server.env import STORAGE_PATH, SECRET_KEY
 #in progress
 #current idea : currently logged in user ka token + db name??
 
-STATE_FILE = f'{STORAGE_PATH}/state.json'
+STATE_FILE = f'{PATH}/server/state.json'
 
 
 

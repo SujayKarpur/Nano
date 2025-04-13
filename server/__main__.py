@@ -5,7 +5,7 @@ import jwt
 from server import env 
 import server.database.cluster as cluster 
 from server import compact 
-
+from server import statehandler
 
 
 async def write_message(writer: asyncio.StreamWriter, message: str):
@@ -25,7 +25,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
     await write_message(writer, f"\nWelcome to Nano, {username}!\nIf you have any doubts, type help\n".encode())
     print(f"user {username} logged in :)")
 
-    stores = cluster.Cluster(username)
+    stores = cluster.Cluster(token)
 
 
 
@@ -136,4 +136,5 @@ async def main():
 if __name__ == '__main__':
     #stores = cluster.Cluster()
     #env.current = stores.current
+    statehandler.initialize()
     asyncio.run(main())

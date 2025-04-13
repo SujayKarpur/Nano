@@ -2,11 +2,13 @@
 
 
 
-from socket import socket, AF_INET, SOCK_STREAM
+import sys 
 import asyncio 
 
 from server import env 
 from server import auth 
+
+import authenticate 
 
 
 
@@ -37,11 +39,95 @@ def startup() -> None:
 
 
 
+def signup_flow() -> None:
+    username = input("Enter your username here: ")
+    password = input("Enter your password here: ")
+    success, ret = authenticate.signup(username, password)
+
+    if not success:
+        choice = input("Do you want to try again? Enter yes/no: ")
+        while choice.casefold() not in ('yes', 'no'):
+            print("That is not a valid answer!")
+            choice = input("Please reply with yes/no only: ")
+        if choice.casefold() == 'yes':
+            print("OK. Trying SIGN UP again......\n")
+            try:
+                signup_flow()
+            except RecursionError:
+                print("Sorry, you entered an existing username too many times")
+                print("Try again later!")
+                print("Exiting...")
+        else:
+            sys.exit()
+    if success:
+        print(ret)
+        print("To use Nano, run the client again and login with your new credentials!")
+        print("Exiting.....")
+        sys.exit()
+
+
+
+
+def login_flow() -> str:
+    username = input("Enter your username here: ")
+    password = input("Enter your password here: ") 
+
+    s = authenticate.login(username, password)
+
+    if s[0] == 'E':
+        print(s)
+        choice = input("Do you want to try again? Enter yes/no: ")
+        while choice.casefold() not in ('yes', 'no'):
+            print("That is not a valid answer!")
+            choice = input("Please reply with yes/no only: ")
+        if choice.casefold() == 'yes':
+            print("OK. Trying LOGIN again......\n")
+            try:
+                login_flow()
+            except RecursionError:
+                print("Sorry, you entered invalid credentials too many times")
+                print("Try again later!")
+                print("Exiting...")
+        else:
+            sys.exit()        
+
+    
+    else:
+        return s[1:] 
+
+
+
+
 
 async def main():
 
 
-    startup()
+    print("\n\nWelcome to Nano!\n")
+    print("Nano is a lightweight, secure key value store with concurrency control")
+    print('\n\n')
+
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] in ('SIGNUP', 'signup', 'sign'):
+            signup_flow()
+        else:
+            print("usage: ./nano [signup]")
+            sys.exit()
+
+    else:
+        choice = input("Do you already have an account? Enter yes/no only:  ")
+        while choice.casefold() not in ('yes', 'no'):
+            print("That is not a valid answer!")
+            choice = input("Please reply with yes/no only: ")
+        
+        if choice.casefold() == 'yes':
+            token = login_flow() 
+
+        else:
+            signup_flow()
+
+
+    
     reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
 
 

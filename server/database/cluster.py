@@ -1,4 +1,4 @@
-from typing import List 
+from typing import List, Set 
 from os import makedirs 
 from bisect import insort, bisect 
 import json 
@@ -21,9 +21,9 @@ LOG_PATH = f'{env.META_STORAGE_PATH}/wal.log'
 
 
 
-def list_of_databases() -> List[str]:
+def list_of_databases() -> Set[str]:
     with open(LIST_PATH, 'r') as f:
-        names = [i.rstrip('\n') for i in f.readlines()]
+        names = {i.rstrip('\n') for i in f.readlines()}
     return names 
 
 
@@ -38,30 +38,28 @@ class Cluster:
 
     def __init__(self, username: str) -> None: 
         """ Initialize the Cluster when the server starts running """
-        self.startup()
-        self.names: List[str] = list_of_databases()
-        self.onames = self.names 
-        self.delnames: List[str] = []
-        self.wal = WAL(env.META_STORAGE_PATH)
+
+        self.startup() #recover from potential crashes 
+
+        self.username = username 
+        self.user = User(username)
+        self.default_name = "default" + self.username 
+
+
+        self.global_names: Set[str] = list_of_databases()
+        self.user_names: Set[str] = set(self.user.read())
+
         self.len: int = len(self.names)
 
 
-        self.username = username 
-        new_name = "default"+self.username
+        self.wal = WAL(env.META_STORAGE_PATH)
+        
 
-        self.user = User(self.username)
-        makedirs(f'{env.DATABASE_STORAGE_PATH}/{new_name}', exist_ok = True)
+        self.current = Database(self.default_name) 
+        set_current_db_name(self.default_name)
 
-        if new_name not in self.onames:
-            self.create(new_name)
 
-        self.current = Database(new_name) 
-        set_current_db_name(new_name)
 
-        if new_name not in self.names:
-            self.names.append(new_name)
-
-        self.names = list(set.intersection(set(self.names), set(self.user.read())) | {new_name})
  
 
 
@@ -72,7 +70,11 @@ class Cluster:
 
 
     def create(self, name: str) -> str:
-        self.names.append(name)
+
+        if name in self.user_names: 
+            return f"Void. Database {name} already exists"
+
+        self.names.add(name)
         self.len += 1 
         self.wal.write(name)
 
@@ -90,30 +92,30 @@ class Cluster:
     def drop(self, name: str) -> str:
 
         if name == self.current.name:
-            set_current_db_name("default" + self.username)
-            self.current = Database("default" + self.username)
+            set_current_db_name(self.default_name)
+            self.current = Database(self.default_name)
+            return f"OK. Deleted database {name}"
 
-
-        for i in range(self.len):
-            if self.names[i] == name:
-                self.names.pop(i)
-                self.delnames.append(i)
-                self.len -= 1 
-                self.wal.write(f'{name} {env.TOMBSTONE}')
-
-                with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
-                    dbs = json.load(f) 
-                
-                dbs.pop(name)
-
-                with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'w') as f:
-                    dbs = json.dump(dbs, f, indent=2)
-
-                return f"OK. Deleted database {name}"
-            
-
-        else:
+        if name not in self.user_names:
             return f"ERROR: No database {name} exists"
+        
+
+        self.user_names.remove(name)
+        self.global_names.remove(name)
+        self.len -= 1 
+
+        self.wal.write(f'{name} {env.TOMBSTONE}')
+
+        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
+            dbs = json.load(f) 
+        
+        dbs.pop(name)
+
+        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'w') as f:
+            dbs = json.dump(dbs, f, indent=2)
+
+        return f"OK. Deleted database {name}"
+            
 
 
     def list(self) -> str:

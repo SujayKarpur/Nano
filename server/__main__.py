@@ -31,7 +31,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
     payload = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])
     username = payload["username"]
-    await write_message(writer, f"Welcome to Nano, {username}!".encode())
+    await write_message(writer, f"\nWelcome to Nano, {username}!\nIf you have any doubts, type help\n".encode())
     print(f"user {username} logged in :)")
 
     stores = cluster.Cluster(username)

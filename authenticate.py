@@ -1,6 +1,7 @@
 import json 
 import jwt 
 import bcrypt 
+import os 
 from typing import Tuple 
 
 from server import env
@@ -27,7 +28,8 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
         with open(f'{env.USER_STORAGE_PATH}/{username}.json', 'w') as f:
             json.dump({"default" + username : 4}, f)
 
-
+        os.makedirs(f'{env.DATABASE_STORAGE_PATH}/{"default" + username}', exist_ok = True)
+        
         return (True, "SIGNED UP SUCCESSFULLY!!")
 
 

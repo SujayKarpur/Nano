@@ -102,9 +102,14 @@ def login_flow() -> str:
 async def main():
 
 
-    print("\n\nWelcome to Nano!\n")
+    print("\n\nWelcome to Nano!")
     print("Nano is a lightweight, secure key value store with concurrency control")
     print('\n\n')
+
+    if len(sys.argv) > 2:
+        print("Invalid usage")
+        print("Try :  ./nano [signup]")
+        sys.exit()
 
 
     if len(sys.argv) > 1:
@@ -114,6 +119,7 @@ async def main():
             print("usage: ./nano [signup]")
             sys.exit()
 
+
     else:
         choice = input("Do you already have an account? Enter yes/no only:  ")
         while choice.casefold() not in ('yes', 'no'):
@@ -121,6 +127,7 @@ async def main():
             choice = input("Please reply with yes/no only: ")
         
         if choice.casefold() == 'yes':
+            print()
             token = login_flow() 
 
         else:
@@ -145,11 +152,6 @@ async def main():
             help()
             continue  
 
-        if command in ('LOGIN', 'SIGNUP'):
-            username = input('\nEnter your username: ')
-            password = input('Enter your password: ')
-            print()
-            command = command + ' ' + username + ' ' + password 
 
         writer.write(command.encode())
         await writer.drain()

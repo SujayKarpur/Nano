@@ -1,20 +1,6 @@
-import json 
-from typing import Tuple 
-import bcrypt 
-import jwt 
-import time 
-
 from server.user.user import User 
-from server import env 
 
-from server.statehandler import get_current_username, get_current_db_name, set_current_user_token
-
-#from env import USER_STORAGE_PATH, SECRET_KEY
-
-
-USERS_FILE = f'{env.USER_STORAGE_PATH}/users.json'
-
-
+from server.statehandler import get_current_db_name
 
 
 

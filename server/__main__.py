@@ -8,9 +8,7 @@ import jwt
 from server import env 
 import server.database.cluster as cluster 
 from server import compact 
-from server import auth 
-from server.user.user import User 
-from server.statehandler import get_current_username, get_current_db_name
+from server.statehandler import get_current_db_name
 
 
 
@@ -21,9 +19,6 @@ async def write_message(writer: asyncio.StreamWriter, message: str):
 
 
 async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
-
-    #addr = writer.get_extra_info('peername')
-    #print(f"Client {addr} joined :)")
 
     init = await reader.read(1024)
     # do stuff here 
@@ -49,18 +44,6 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 stores.shutdown()
                 raise BrokenPipeError()
 
-            username = get_current_username()
-            user = User(username)
-            can = auth.authorize(user, comlist[0])
-
-
-
-            if not can:
-                print(f"The current database is {get_current_db_name()}, the current user is {get_current_username()}, the perm")
-                print(stores.user.own(), stores.user.modify(), stores.user.write(), stores.user.read(), sep='\n')
-                print('wut', stores.current.name in stores.user.own())
-                message = "ERROR: You do not have the permission to perform that action".encode()
-
 
 
             elif comlist[0] in ('exit', ''):
@@ -72,26 +55,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
             
             elif comlist[0] == 'SHARE':
-
-                if "default" in get_current_db_name():
-                    message = f"ERROR. Can't share default database".encode()
-
-                
-                else:
-                    share_to_user_uname = comlist[1]
-                    permission_level = comlist[2]
-
-                    with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'r') as f:
-                        accesses = json.load(f)
-
-                    
-                    accesses[get_current_db_name()] = int(permission_level)
-
-                    with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'w') as f:
-                        json.dump(accesses, f)
-
-
-                    message = f"OK. Granted user {share_to_user_uname} permission level {permission_level}".encode()
+                message = stores.share(comlist[1], comlist[2]).encode()
 
 
 
@@ -109,7 +73,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] == 'CREATE':
-                os.makedirs(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}', exist_ok=True)
+                s.makedirs(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}', exist_ok=True)
                 message = stores.create(comlist[1]).encode()
                 
 
@@ -121,7 +85,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                 else:
                     msg = stores.drop(comlist[1])
                     if msg[0] == 'O':
-                        shutil.rmtree(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}')
+                        hutil.rmtree(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}')
                     
                     message = msg.encode()
 

@@ -18,10 +18,10 @@ from server import env
 
 
 
-def list_of_databases(LIST_PATH) -> Set[str]:
+def list_of_databases(LIST_PATH) -> Dict[str, List[int, str]]:
     with open(LIST_PATH, 'r') as f:
         data = json.load(f)
-    return set(data) 
+    return data 
 
 
 
@@ -46,11 +46,13 @@ class Cluster:
 
         self.STORAGE_PATH = f'{env.STORAGE_PATH}/{self.username}'
         self.META_STORAGE_PATH = f'{self.STORAGE_PATH}/meta'
-        self.LIST_PATH = f'{self.META_STORAGE_PATH}/list.json'
+        self.LIST_PATH = f'{self.META_STORAGE_PATH}/local.json'
+        self.LIST2_PATH = f'{self.META_STORAGE_PATH}/shared.json'
         self.LOG_PATH = f'{self.META_STORAGE_PATH}/wal.log'
 
 
         self.names: Set[str] = list_of_databases(self.LIST_PATH)
+        self.shared_names: Set[str] = list_of_databases(self.LIST2_PATH)
 
 
         self.wal = WAL(self.META_STORAGE_PATH)
@@ -83,6 +85,30 @@ class Cluster:
             dbs = json.dump(dbs, f, indent=2)
 
         return f"OK. Created new database {name}"
+    
+
+    def share(self, username: str, permission_level: int) -> str:
+
+        if self.current.name == "default":
+            return "ERROR: Can't share the default database"
+        
+        with open(f'{env.STORAGE_PATH}/users.json', 'r') as f:
+            users = json.load(f)
+
+        if username not in users:
+            return "ERROR: No such user exists"
+        
+
+
+        with open(f'{env.STORAGE_PATH}/{username}/meta/shared.json', 'r') as f:
+            accesses = json.load(f)
+
+        accesses[self.current.name] = [int(permission_level), self.username]
+
+        with open(f'{env.STORAGE_PATH}/{username}/meta/shared.json', 'w') as f:
+            json.dump(accesses, f)
+
+
 
 
     def drop(self, name: str) -> str:
@@ -144,3 +170,7 @@ class Cluster:
 
     def startup(self) -> None:
         pass 
+
+
+    def authorize(self, command: str, optional: int) -> bool:
+        pass  

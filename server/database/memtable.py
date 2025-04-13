@@ -2,7 +2,7 @@ from typing import Tuple, List
 
 from server.database.redblacktree import RedBlackTree, Node
 from server.database.wal import WAL 
-from server.env import TOMBSTONE, DATABASE_STORAGE_PATH
+from server.env import TOMBSTONE
 
 
 

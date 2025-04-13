@@ -4,10 +4,10 @@ import bcrypt
 import jwt 
 import time 
 
-from src.user.user import User 
-import env 
+from server.user.user import User 
+from server import env 
 
-from storage.statehandler import get_current_username, get_current_db_name, set_current_user_token
+from server.statehandler import get_current_username, get_current_db_name, set_current_user_token
 
 #from env import USER_STORAGE_PATH, SECRET_KEY
 

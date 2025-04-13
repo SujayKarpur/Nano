@@ -2,15 +2,16 @@ from typing import List
 from os import makedirs 
 from bisect import insort, bisect 
 import json 
+ 
 
-from src.database.wal import WAL 
-from src.database.database import Database
-from src.user.user import User 
+from server.database.wal import WAL 
+from server.database.database import Database
+from server.user.user import User 
 
 
-from storage.statehandler import get_current_username, get_current_db_name, set_current_db_name
+from server.statehandler import get_current_username, get_current_db_name, set_current_db_name
 
-import env
+from server import env
 
 
 

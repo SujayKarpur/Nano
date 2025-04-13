@@ -1,6 +1,6 @@
 import os 
 
-from env import PATH 
+from server.env import PATH 
 
 
 class WAL:

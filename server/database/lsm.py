@@ -2,10 +2,10 @@ from typing import Tuple
 import os 
 
 
-from src.database.memtable import Memtable
-from src.database.sstable import SSTable
+from server.database.memtable import Memtable
+from server.database.sstable import SSTable
 
-from env import FLUSH_SIZE, DATABASE_STORAGE_PATH
+from server.env import FLUSH_SIZE, DATABASE_STORAGE_PATH
 
 
 

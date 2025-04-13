@@ -1,0 +1,179 @@
+from socket import *
+import asyncio 
+import os 
+import shutil 
+import json 
+
+from server import env 
+import server.database.cluster as cluster 
+from server import compact 
+from server import auth 
+from server.user.user import User 
+from server.statehandler import get_current_username, get_current_db_name
+
+
+
+async def write_message(writer: asyncio.StreamWriter, message: str):
+    writer.write(message)
+    await writer.drain() 
+
+
+
+async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWriter):
+
+    addr = writer.get_extra_info('peername')
+    print(f"Client {addr} joined :)")
+
+
+    try:
+        while True: 
+            
+            command = await reader.read(1024)
+            command = command.decode()
+            comlist = command.split()
+
+            if not command:
+                stores.shutdown()
+                raise BrokenPipeError()
+
+            username = get_current_username()
+            user = User(username)
+            can = auth.authorize(user, comlist[0])
+
+            if username != stores.username:
+                stores.set_user(username)
+
+
+            if not can:
+                print(f"The current database is {get_current_db_name()}, the current user is {get_current_username()}, the perm")
+                print(stores.user.own(), stores.user.modify(), stores.user.write(), stores.user.read(), sep='\n')
+                print('wut', stores.current.name in stores.user.own())
+                message = "ERROR: You do not have the permission to perform that action".encode()
+
+
+
+            elif comlist[0] in ('exit', ''):
+                #stores.current.db.shutdown()
+                stores.shutdown()
+                message = 'OK. Exiting Nano............\n'.encode()
+                print(f"Client {addr} left :(")
+
+
+
+            elif comlist[0] == 'LOGIN':
+                message = auth.login(comlist[1], comlist[2]).encode()
+
+
+            elif comlist[0] == 'LOGOUT':
+                message = auth.logout().encode()
+
+
+            elif comlist[0] == 'SIGNUP':
+                message = auth.signup(comlist[1], comlist[2]).encode()
+
+
+            
+            elif comlist[0] == 'SHARE':
+
+                if "default" in get_current_db_name():
+                    message = f"ERROR. Can't share default database".encode()
+
+                
+                else:
+                    share_to_user_uname = comlist[1]
+                    permission_level = comlist[2]
+
+                    with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'r') as f:
+                        accesses = json.load(f)
+
+                    
+                    accesses[get_current_db_name()] = int(permission_level)
+
+                    with open(f'{env.USER_STORAGE_PATH}/{share_to_user_uname}.json', 'w') as f:
+                        json.dump(accesses, f)
+
+
+                    message = f"OK. Granted user {share_to_user_uname} permission level {permission_level}".encode()
+
+
+
+
+            elif comlist[0] == 'LIST':
+                print("trynna list shi here")
+                message = stores.list().encode()
+                print("encoded the list message", message.decode())
+
+
+
+            elif comlist[0] == 'SELECT':
+                #env.current = stores.current 
+                message = stores.select(comlist[1]).encode()          
+
+
+            elif comlist[0] == 'CREATE':
+                os.makedirs(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}', exist_ok=True)
+                message = stores.create(comlist[1]).encode()
+                
+
+            elif comlist[0] == 'DROP':
+
+                if comlist[1] == 'default':
+                    message = "ERROR: Can't drop the default database".encode()
+                
+                else:
+                    msg = stores.drop(comlist[1])
+                    if msg[0] == 'O':
+                        shutil.rmtree(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}')
+                    
+                    message = msg.encode()
+
+            else:
+                if stores.current == None:
+                    message = "ERROR. No database selected".encode()
+                else:
+                    pass #stores.current.wal.write(command)
+
+
+                if comlist[0] == 'GET':
+                    message = stores.current.get(comlist[1]).encode()
+
+                elif comlist[0] == 'SET':
+                    message = stores.current.set(comlist[1], comlist[2]).encode()
+
+                elif comlist[0] == 'DELETE':
+                    message = stores.current.delete(comlist[1]).encode()
+
+                else:   
+                    break 
+            
+            await write_message(writer, message)
+
+
+    except BrokenPipeError:
+        pass 
+        #print(f"Client {addr} closed the connection")
+
+
+    finally:
+        writer.close()
+        await writer.wait_closed()
+
+
+async def main():
+
+    asyncio.create_task(compact.compact()) #asynchronously compact SSTables 
+
+    server = await asyncio.start_server(handle_client, env.HOST, env.PORT)
+    print("Server is listening")
+    async with server:
+        await server.serve_forever()
+
+
+                
+ 
+
+
+if __name__ == '__main__':
+    stores = cluster.Cluster()
+    #env.current = stores.current
+    asyncio.run(main())

@@ -2,7 +2,7 @@ from typing import List
 import jwt 
 import json 
 
-import env  
+from server import env  
 
 
 class User:

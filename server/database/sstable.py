@@ -2,10 +2,10 @@ from typing import Tuple
 import linecache
 import os 
 
-from src.database.bloomfilter import BloomFilter 
-from src.database.memtable import Memtable
+from server.database.bloomfilter import BloomFilter 
+from server.database.memtable import Memtable
 
-from env import DATABASE_STORAGE_PATH
+from server.env import DATABASE_STORAGE_PATH
 
 
 

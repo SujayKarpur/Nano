@@ -1,8 +1,8 @@
 import json 
 import jwt 
-import bcrypt 
 
-from env import STORAGE_PATH, SECRET_KEY
+
+from server.env import STORAGE_PATH, SECRET_KEY
 
 
 

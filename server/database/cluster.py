@@ -1,5 +1,6 @@
 from typing import List, Set, Dict 
 from os import makedirs 
+from shutil import rmtree
 from bisect import insort, bisect 
 import json 
 import jwt 
@@ -80,6 +81,7 @@ class Cluster:
         with open(self.LIST_PATH, 'w') as f:
             dbs = json.dump(dbs, f, indent=2)
 
+        makedirs(f'{env.STORAGE_PATH}/{self.username}/databases/{name}', exist_ok=True)
         return f"OK. Created new database {name}"
     
 
@@ -144,6 +146,10 @@ class Cluster:
                 with open(f'{env.STORAGE_PATH}/{u}/meta/shared.json', 'w') as f:
                     dbs = json.dump(dbs, f, indent=2)
 
+        
+        
+        rmtree(f'{env.STORAGE_PATH}/{self.username}/databases/{name}', ignore_errors=True)
+
         return f"OK. Deleted database {name}"
             
 
@@ -181,14 +187,19 @@ class Cluster:
         if command in ('help', 'exit'):
             return True 
 
-        if command in ('LIST', 'CREATE', 'SELECT'):
+        if command in ('LIST', 'CREATE', 'SELECT', 'GET'):
             return True 
 
-        if command in ('GET'):
-            return 
-
         if command in ('SET', 'DELETE'):
-            return 
+
+            if self.current.name in self.names:
+                return True  
+
+            return self.shared_names[self.current.name][0] > 1
+
 
         if command in ('DROP', 'SHARE'):
-            return  
+            if self.current.name in self.names:
+                return True  
+
+            return self.shared_names[self.current.name][0] > 2

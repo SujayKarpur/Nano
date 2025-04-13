@@ -1,8 +1,5 @@
 from socket import *
 import asyncio 
-import os 
-import shutil 
-import json 
 import jwt 
 
 from server import env 
@@ -43,7 +40,13 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             if not command:
                 stores.shutdown()
                 raise BrokenPipeError()
+            
 
+            can = stores.authorize(command)
+
+            
+            if not can:
+                message = "ERROR. Permission Denied".encode() 
 
 
             elif comlist[0] in ('exit', ''):
@@ -73,7 +76,6 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] == 'CREATE':
-                s.makedirs(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}', exist_ok=True)
                 message = stores.create(comlist[1]).encode()
                 
 
@@ -83,10 +85,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     message = "ERROR: Can't drop the default database".encode()
                 
                 else:
-                    msg = stores.drop(comlist[1])
-                    if msg[0] == 'O':
-                        hutil.rmtree(f'{env.DATABASE_STORAGE_PATH}/{comlist[1]}')
-                    
+                    msg = stores.drop(comlist[1])                    
                     message = msg.encode()
 
             else:

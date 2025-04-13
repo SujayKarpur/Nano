@@ -54,7 +54,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] in ('exit', ''):
-                stores.current.db.shutdown()
+                #stores.current.db.shutdown()
                 stores.cleanup()
                 message = 'OK. Exiting Nano............\n'.encode()
                 print(f"Client {addr} left :(")

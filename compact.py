@@ -43,8 +43,8 @@ def merge(path, file_1, file_2) -> None:
 
 async def compact() -> None:
     while True: 
-        for name in os.listdir('./storage'):
-            path = os.path.join('./storage', name)
+        for name in os.listdir('./storage/databases'):
+            path = os.path.join('./storage/databases', name)
             if os.path.isdir(path) and name != get_current_db_name():
                 s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))
                 if len(s) > 0:
@@ -69,5 +69,5 @@ async def compact() -> None:
 
 
 if __name__ == '__main__':
-    env.current_database = None 
+    #env.current_database = None 
     asyncio.run(compact())

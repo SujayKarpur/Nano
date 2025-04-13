@@ -74,7 +74,7 @@ def authorize(user: User, command: str) -> bool:
     if command in ('exit', '', 'LOGIN'):
         return True 
     
-    if command in ('LIST', 'LOGOUT', 'SELECT'):
+    if command in ('LIST', 'LOGOUT', 'SELECT', 'CREATE'):
         return user != None 
     
     if command in ('GET'):

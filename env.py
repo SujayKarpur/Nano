@@ -34,9 +34,6 @@ USER_STORAGE_PATH: str = f'{STORAGE_PATH}/users'
 META_USER_STORAGE_PATH = f'{USER_STORAGE_PATH}/meta'
 
 
-CURRENT_USER = f'{STORAGE_PATH}/cu_token.txt'
-CURRENT_DATABASE = f'{STORAGE_PATH}/cu_db.txt'
-
 
 
 

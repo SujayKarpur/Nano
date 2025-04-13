@@ -74,9 +74,6 @@ async def main():
         if not token:
             print("ERROR: Invalid username or password")
         else:
-            with open('cu_token.txt', 'w') as f:
-                print(token, file=f)
-            #env.current_user = User(token) 
             print(f"Logged In successfully :) w token: {token}")
 
 

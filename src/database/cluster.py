@@ -52,6 +52,10 @@ class Cluster:
 
         self.user = User(self.username)
         makedirs(f'{env.DATABASE_STORAGE_PATH}/{new_name}', exist_ok = True)
+
+        if new_name not in self.onames:
+            self.create(new_name)
+
         self.current = Database(new_name) 
         set_current_db_name(new_name)
 
@@ -140,6 +144,7 @@ class Cluster:
         
 
     def cleanup(self) -> None:
+        self.current.db.shutdown()
         with open(LIST_PATH, 'w') as f:
             self.names = (set(self.names) | set(self.onames)) - self.delnames
             print('\n'.join(self.names), file = f) 

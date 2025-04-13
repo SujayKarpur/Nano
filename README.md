@@ -5,8 +5,8 @@ Nano is a persistent, secure, key-value store I built from scratch in python to 
 
 Clone the repository 
 ```sh
-$ git clone https://github.com/SujayKarpur/plox.git
-$ cd plox
+$ git clone https://github.com/SujayKarpur/Nano.git
+$ cd Nano
 ```
 
 Set up and activate a python virtual environment

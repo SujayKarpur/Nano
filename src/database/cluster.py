@@ -39,6 +39,8 @@ class Cluster:
         """ Initialize the Cluster when the server starts running """
         self.recover_from_crash()
         self.names: List[str] = list_of_databases()
+        self.onames = self.names 
+        self.delnames: List[str] = []
         self.wal = WAL(env.META_STORAGE_PATH)
         self.len: int = len(self.names)
 
@@ -92,6 +94,7 @@ class Cluster:
         for i in range(self.len):
             if self.names[i] == name:
                 self.names.pop(i)
+                self.delnames.append(i)
                 self.len -= 1 
                 self.wal.write(f'{name} {env.TOMBSTONE}')
 
@@ -138,7 +141,7 @@ class Cluster:
 
     def cleanup(self) -> None:
         with open(LIST_PATH, 'w') as f:
-            self.names = sorted(set(self.names))
+            self.names = (set(self.names) | set(self.onames)) - self.delnames
             print('\n'.join(self.names), file = f) 
         self.wal.reset()
 

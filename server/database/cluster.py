@@ -48,7 +48,7 @@ class Cluster:
         self.username = self.name = self.current = self.user = None 
 
     def set_user(self, username: str) -> None:
-        self.username = get_current_username()
+        self.username = username 
         new_name = "default"+self.username
 
         self.user = User(self.username)

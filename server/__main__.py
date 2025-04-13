@@ -40,7 +40,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             user = User(username)
             can = auth.authorize(user, comlist[0])
 
-            if username != stores.username:
+            if username != stores.username and username != None:
                 stores.set_user(username)
 
 
@@ -65,6 +65,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] == 'LOGOUT':
+                stores.current.db.shutdown()
                 message = auth.logout().encode()
 
 

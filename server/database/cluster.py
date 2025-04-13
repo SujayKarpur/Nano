@@ -151,6 +151,7 @@ class Cluster:
 
 
     def list(self) -> str:
+        self.shared_names = list_of_databases(self.LIST2_PATH)
         return '\n'.join(self.names | self.shared_names)
 
 
@@ -158,6 +159,8 @@ class Cluster:
 
         if name == self.current.name:
             return f"Void. Already in database {name}"
+        
+        self.shared_names = list_of_databases(self.LIST2_PATH)
         
         if name not in (self.names | self.shared_names):
             return f"ERROR: No database {name} exists"

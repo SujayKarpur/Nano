@@ -140,6 +140,10 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
         pass 
         #print(f"Client {addr} closed the connection")
 
+    except KeyboardInterrupt:
+        stores.shutdown()
+        print("Exiting.....")
+
 
     finally:
         writer.close()

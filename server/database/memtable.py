@@ -63,5 +63,19 @@ class Memtable:
 
 
 
+    def temporary_replay(self) -> None:
+        self.wal.close()
+        f = open(self.wal.file_name, 'r') 
+        commands = [i.rstrip('\n') for i in f.readlines()]
+        for command in commands:
+            command_list = command.split()
+            if command_list[0] == 'SET':
+                self.set(command_list[1], command_list[2])
+            elif command_list[0] == 'DELETE':
+                self.delete(command_list[1])
+        f.close()
+
+
+
     def ordered_list(self) -> List[Node]:
         return self.data._inorder_traversal_helper(self.data.root)

@@ -2,8 +2,11 @@ import os
 import asyncio 
 from typing import List 
 
-
-from server.statehandler import get_current_databases
+if __name__ != '__main__':
+    from server.statehandler import get_current_databases 
+    USRPATH = './storage/'
+else:
+    USRPATH = '../storage/'
 
 
 
@@ -49,7 +52,7 @@ async def compact() -> None:
     """
 
     #DBPATH = './storage/databases'
-    USRPATH = './storage/'
+    
 
     while True:
         for user in os.listdir(USRPATH):
@@ -58,6 +61,14 @@ async def compact() -> None:
                 continue 
 
             dbpath = os.path.join(USRPATH, user)
+
+            if user == '__pycache__':
+                continue 
+
+            try:
+                dbpath = os.path.join(dbpath, 'databases')
+            except:
+                continue 
 
             for name in os.listdir(dbpath):
                 path = os.path.join(dbpath, name)
@@ -84,7 +95,8 @@ async def compact() -> None:
                         os.remove(os.path.join(path,corresponding_metablock))
 
 
-            await asyncio.sleep(5)
+            if __name__ != '__main__':
+                await asyncio.sleep(5)
 
 
 if __name__ == '__main__':

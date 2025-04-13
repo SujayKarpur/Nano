@@ -34,8 +34,6 @@ class Cluster:
     def __init__(self, token: str) -> None: 
         """ Initialize the Cluster when the server starts running """
 
-        self.startup() #recover from potential crashes 
-
         self.token = token 
         self.username = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])["username"] 
         self.user = User(self.username)
@@ -153,7 +151,7 @@ class Cluster:
 
 
     def list(self) -> str:
-        return '\n'.join(self.names)
+        return '\n'.join(self.names | self.shared_names)
 
 
     def select(self, name: str) -> str:
@@ -182,10 +180,6 @@ class Cluster:
 
         if self.current:
             self.current.shutdown()
-
-
-    def startup(self) -> None:
-        pass 
 
 
     def authorize(self, command: str, optional: int = 0) -> bool:

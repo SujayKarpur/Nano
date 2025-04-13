@@ -37,7 +37,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             comlist = command.split()
 
             if not command:
-                stores.shutdown()
+                #stores.shutdown()
                 raise BrokenPipeError()
             
 
@@ -50,10 +50,8 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] in ('exit', ''):
-                #stores.current.db.shutdown()
                 stores.shutdown()
                 message = 'OK. Exiting Nano............\n'.encode()
-                #print(f"Client {addr} left :(")
 
 
             

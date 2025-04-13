@@ -32,7 +32,58 @@ $ ./nano
 ```
 
 ## API
--fill
+
+### <span style="color:blue;">General</span>
+---
+`help`  
+Displays help menu.
+
+`exit`  
+Exits the session.
+
+---
+
+### <span style="color:#28a745;">Auth</span>
+---
+`LOGIN <username> <password>`  
+Logs in the user.
+
+`LOGOUT`  
+Logs out the user.
+
+`SIGNUP <username> <password>`  
+Registers a new user.
+
+---
+
+### <span style="color:#fd7e14;">Database-Level Commands</span>
+---
+`LIST`  
+Lists all databases.
+
+`CREATE <database>`  
+Creates a database.
+
+`DROP <database>`  
+Drops a database.
+
+`SELECT <database>`  
+Selects a database.
+
+---
+
+### <span style="color:#6f42c1;">Modify the Selected Database</span>
+---
+`GET <key>`  
+Retrieves a value.
+
+`SET <key> <value>`  
+Sets a key’s value.
+
+`DELETE <key>`  
+Deletes a key.
+
+---
 
 ## I. Key Value Stores
 key-value stores are the simplest kind of databases - they are just mappings from keys to values.

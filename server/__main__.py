@@ -20,13 +20,14 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
     # do stuff here 
     token = init.decode()
 
-    payload = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])
-    username = payload["username"]
-    await write_message(writer, f"\nWelcome to Nano, {username}!\nIf you have any doubts, type help\n".encode())
-    print(f"user {username} logged in :)")
+    #payload = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])
+    #username = payload["username"]
+
 
     stores = cluster.Cluster(token)
 
+    await write_message(writer, f"\nWelcome to Nano, {stores.username}!\nIf you have any doubts, type help\n".encode())
+    print(f"user {stores.username} logged in :)")
 
 
     try:
@@ -62,29 +63,39 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
             elif comlist[0] == 'LIST':
-                print("trynna list shi here")
                 message = stores.list().encode()
-                print("encoded the list message", message.decode())
+                #print("encoded the list message", message.decode())
 
 
 
             elif comlist[0] == 'SELECT':
-                #env.current = stores.current 
-                message = stores.select(comlist[1]).encode()          
+                if len(comlist) != 2:
+                    message = f"ERROR. SELECT expected 1 argument (database) but got {len(comlist)}".encode()
+                else:
+                    message = stores.select(comlist[1]).encode()          
 
 
             elif comlist[0] == 'CREATE':
-                message = stores.create(comlist[1]).encode()
+                if len(comlist) != 2:
+                    message = f"ERROR. CREATE expected 1 argument (database_name) but got {len(comlist)}".encode()
+                else:
+                    message = stores.create(comlist[1]).encode()
                 
 
             elif comlist[0] == 'DROP':
 
-                if comlist[1] == 'default':
-                    message = "ERROR: Can't drop the default database".encode()
-                
+                if len(comlist) != 2:
+                    message = f"ERROR. CREATE expected 1 argument (database_name) but got {len(comlist)}".encode()
+
                 else:
-                    msg = stores.drop(comlist[1])                    
-                    message = msg.encode()
+
+                    if comlist[1] == 'default':
+                        message = "ERROR: Can't drop the default database".encode()
+                    
+                    else:
+                        msg = stores.drop(comlist[1])                    
+                        message = msg.encode()
+
 
             else:
                 if stores.current == None:
@@ -94,15 +105,32 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
 
                 if comlist[0] == 'GET':
-                    message = stores.current.get(comlist[1]).encode()
+                    
+                    if len(comlist) not in (1,2):
+                        message = f"GET expected 1 or 2 arguments but received {len(comlist)}".encode()
+                    elif len(comlist) == 1:
+                        message = "feature yet to be implemented".encode() 
+                    else:
+                        message = stores.current.get(comlist[1]).encode()
+
+
 
                 elif comlist[0] == 'SET':
-                    message = stores.current.set(comlist[1], comlist[2]).encode()
+                    if len(comlist) != 3:
+                        message = f"SET expected 2 arguments (key,value) but received {len(comlist)}".encode()
+                    else:
+                        message = stores.current.set(comlist[1], comlist[2]).encode()
+                    
+
 
                 elif comlist[0] == 'DELETE':
-                    message = stores.current.delete(comlist[1]).encode()
+                    if len(comlist) != 2:
+                        message = f"DELETE expected 1 argument (key) but received {len(comlist)}".encode()
+                    else:
+                        message = stores.current.delete(comlist[1]).encode()
 
                 else:   
+                    message = f"Invalid command.\nType `help` to check list of valid commands"
                     break 
             
             await write_message(writer, message)

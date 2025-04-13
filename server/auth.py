@@ -16,53 +16,6 @@ USERS_FILE = f'{env.USER_STORAGE_PATH}/users.json'
 
 
 
-def signup(username: str, password: str) -> str:
-    
-    with open(USERS_FILE, 'r') as f:
-        users = json.load(f) 
-
-    if username in users:
-        return "ERROR: That username already exists"
-    
-    else:
-        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-        users[username] = hashed_password
-
-        with open(USERS_FILE, 'w') as f:
-            json.dump(users, f, indent=2)
-
-        with open(f'{env.USER_STORAGE_PATH}/{username}.json', 'w') as f:
-            json.dump({"default" + username : 4}, f)
-
-
-        return "SIGNED UP SUCCESSFULLY!!"
-
-
-
-
-def login(username: str, password: str) -> str:
-    
-    with open(USERS_FILE, 'r') as f:
-        users = json.load(f) 
-
-    if username not in users or not bcrypt.checkpw(password.encode(), users[username].encode()):
-        return "ERROR: Invalid username or password" 
-    
-    payload = {"username" : username, "exp" : time.time() + 600}
-    token = jwt.encode(payload, env.SECRET_KEY, algorithm='HS256')
-
-    set_current_user_token(token)
-
-    return "Logged In successfully :)" 
-
-
-
-def logout() -> str:
-    set_current_user_token(None)
-    return "OK. Logged Out successfully"
-
-
-
 
 
 

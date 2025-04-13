@@ -1,7 +1,8 @@
-from typing import List, Set 
+from typing import List, Set, Dict 
 from os import makedirs 
 from bisect import insort, bisect 
 import json 
+import jwt 
  
 
 from server.database.wal import WAL 
@@ -9,22 +10,18 @@ from server.database.database import Database
 from server.user.user import User 
 
 
-from server.statehandler import get_current_username, get_current_db_name, set_current_db_name
+from server.statehandler import get_current_db_name, set_current_db_name
 
 from server import env
 
 
 
-LIST_PATH = f'{env.META_STORAGE_PATH}/list.txt'
-LOG_PATH = f'{env.META_STORAGE_PATH}/wal.log'
 
 
-
-
-def list_of_databases() -> Set[str]:
+def list_of_databases(LIST_PATH) -> Set[str]:
     with open(LIST_PATH, 'r') as f:
-        names = {i.rstrip('\n') for i in f.readlines()}
-    return names 
+        data = json.load(f)
+    return set(data) 
 
 
 
@@ -33,26 +30,30 @@ def list_of_databases() -> Set[str]:
 class Cluster:
 
     """
-    Collection of all Nano databases 
+    Collection of all Nano databases [tracks global and user-local databases]
     """
 
-    def __init__(self, username: str) -> None: 
+    def __init__(self, token: str) -> None: 
         """ Initialize the Cluster when the server starts running """
 
         self.startup() #recover from potential crashes 
 
-        self.username = username 
-        self.user = User(username)
+        self.token = token 
+        self.username = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])["username"] 
+        self.user = User(self.username)
         self.default_name = "default" + self.username 
 
 
-        self.global_names: Set[str] = list_of_databases()
-        self.user_names: Set[str] = set(self.user.read())
+        self.STORAGE_PATH = f'{env.STORAGE_PATH}/{self.username}'
+        self.META_STORAGE_PATH = f'{self.STORAGE_PATH}/meta'
+        self.LIST_PATH = f'{self.META_STORAGE_PATH}/list.json'
+        self.LOG_PATH = f'{self.META_STORAGE_PATH}/wal.log'
 
-        self.len: int = len(self.names)
+
+        self.names: Set[str] = list_of_databases(self.LIST_PATH)
 
 
-        self.wal = WAL(env.META_STORAGE_PATH)
+        self.wal = WAL(self.META_STORAGE_PATH)
         
 
         self.current = Database(self.default_name) 
@@ -60,30 +61,25 @@ class Cluster:
 
 
 
- 
-
 
     def __contains__(self, name: str) -> bool:
-        if name == "default":
-            return True 
-        return name in set.intersection(set(self.names), set(self.user.read()))
+        return name in self.names
 
 
     def create(self, name: str) -> str:
 
-        if name in self.user_names: 
+        if name in self.names: 
             return f"Void. Database {name} already exists"
 
         self.names.add(name)
-        self.len += 1 
         self.wal.write(name)
 
-        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
+        with open(self.LIST_PATH, 'r') as f:
             dbs = json.load(f) 
         
-        dbs[name] = 4 
+        dbs[name] = [4, self.username] 
 
-        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'w') as f:
+        with open(self.LIST_PATH, 'w') as f:
             dbs = json.dump(dbs, f, indent=2)
 
         return f"OK. Created new database {name}"
@@ -91,27 +87,28 @@ class Cluster:
 
     def drop(self, name: str) -> str:
 
+        if name == "default":
+            return "ERROR: Can't delete default database"
+
         if name == self.current.name:
             set_current_db_name(self.default_name)
             self.current = Database(self.default_name)
             return f"OK. Deleted database {name}"
 
-        if name not in self.user_names:
+        if name not in self.names:
             return f"ERROR: No database {name} exists"
         
 
-        self.user_names.remove(name)
-        self.global_names.remove(name)
-        self.len -= 1 
+        self.names.remove(name)
 
         self.wal.write(f'{name} {env.TOMBSTONE}')
 
-        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'r') as f:
+        with open(self.LIST_PATH, 'r') as f:
             dbs = json.load(f) 
         
         dbs.pop(name)
 
-        with open(f'{env.USER_STORAGE_PATH}/{self.username}.json', 'w') as f:
+        with open(self.LIST_PATH, 'w') as f:
             dbs = json.dump(dbs, f, indent=2)
 
         return f"OK. Deleted database {name}"
@@ -119,59 +116,31 @@ class Cluster:
 
 
     def list(self) -> str:
-        print('hi i"m in list')
-        print(set(self.names))
-        print(set(self.user.read()))
-        return '\n'.join((set.intersection(set(self.names), set(self.user.read())) | {"default"}) - {"default" + self.username})
+        return '\n'.join(self.names)
 
 
     def select(self, name: str) -> str:
 
-        if name == "default":
-            name += self.username 
-
-
         if name == self.current.name:
             return f"Void. Already in database {name}"
-
-        for i in self.names:
-            if i == name:
-                self.current.shutdown()
-                self.current = Database(i)
-                set_current_db_name(i)
-                return f"OK. Selected database {i}"
-        else:
-            return f"ERROR: No database {name} exists"
         
+        if name not in self.names:
+            return f"ERROR: No database {name} exists"
 
+        self.current.shutdown()
+        self.current = Database(name)
+        set_current_db_name(name)
+        return f"OK. Selected database {name}"
+        
 
     def shutdown(self) -> None:
 
         if self.current:
             self.current.shutdown()
 
-        with open(LIST_PATH, 'w') as f:
-            self.names = (set(self.names) | set(self.onames)) - set(self.delnames)
-            print('\n'.join(self.names), file = f) 
-
         self.wal.reset()
 
 
 
     def startup(self) -> None:
-        with open(LOG_PATH,'r') as f:
-            lines = [i.rstrip('\n') for i in f.readlines()]
-            databases = set()
-            for i in lines:
-                if len(i.split()) == 1:
-                    databases.add(i)
-            #values = [tuple(i.rstrip('\n').split()) for i in f.readlines()]
-            #fixed = [x[0] for x in sorted(list(filter(lambda i : len(i) == 1, set(values))))]
-        with open(LIST_PATH, 'a') as f:
-            if databases:
-                print('\n'.join(databases), file = f) 
-
-        data = {"current_user": None, "current_database": None}
-
-        with open(f'{env.STORAGE_PATH}/state.json', 'w') as f:
-            json.dump(data, f, indent=2)
+        pass 

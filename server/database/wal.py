@@ -1,7 +1,5 @@
 import os 
 
-from server.env import PATH 
-
 
 class WAL:
 

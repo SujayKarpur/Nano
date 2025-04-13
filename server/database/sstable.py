@@ -5,7 +5,6 @@ import os
 from server.database.bloomfilter import BloomFilter 
 from server.database.memtable import Memtable
 
-from server.env import DATABASE_STORAGE_PATH
 
 
 
@@ -13,10 +12,9 @@ from server.env import DATABASE_STORAGE_PATH
 
 class SSTable:
 
-    def __init__(self, name: str, number_of_blocks: int = 0) -> None:
+    def __init__(self, path: str, number_of_blocks: int = 0) -> None:
         self.number_of_blocks = number_of_blocks  
-        self.name = name 
-        self.path = f'{DATABASE_STORAGE_PATH}/{self.name}'
+        self.path = path 
         self.metablockpath = f'{self.path}/sstable_metablock_'
         self.datablockpath = f'{self.path}/sstable_datablock_'
 

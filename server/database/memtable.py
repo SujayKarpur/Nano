@@ -8,10 +8,10 @@ from server.env import TOMBSTONE, DATABASE_STORAGE_PATH
 
 class Memtable:
 
-    def __init__(self, name: str):
-        self.name = name 
+    def __init__(self, path: str):
+        self.path = path 
         self.data = RedBlackTree()
-        self.wal = WAL(f'{DATABASE_STORAGE_PATH}/{self.name}')
+        self.wal = WAL(self.path)
         self.number_of_elements = 0 
 
 

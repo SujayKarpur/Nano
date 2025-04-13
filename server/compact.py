@@ -48,31 +48,39 @@ async def compact() -> None:
     Concurrently 'compact' SSTables that are currently not in use to make storage/searching easier later 
     """
 
-    DBPATH = './storage/databases'
+    #DBPATH = './storage/databases'
+    USRPATH = './storage/'
 
     while True:
-        for name in os.listdir(DBPATH):
-            path = os.path.join(DBPATH, name)
-            if os.path.isdir(path) and name != get_current_db_name():
-                s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))
-                if len(s) > 0:
-                    for indexo in range(len(s)):
-                        while not os.path.getsize(os.path.join(path,s[indexo])):
-                            corresponding_metablock_index = s[indexo].split('_')[-1]
-                            corresponding_metablock = 'sstable_metablock_' + corresponding_metablock_index
-                            os.remove(os.path.join(path,corresponding_metablock))
-                            os.remove(os.path.join(path,s[indexo]))
-                            s.pop(indexo) 
-                            break 
-                if len(s) >= 2 and os.path.getsize(os.path.join(path,s[-1])) and os.path.getsize(os.path.join(path,s[-2])): 
-                    merge(path, s[-2], s[-1])
-                    corresponding_metablock_index = s[-1].split('_')[-1]
-                    corresponding_metablock = 'sstable_metablock_' + corresponding_metablock_index
-                    os.remove(os.path.join(path,s[-1]))
-                    os.remove(os.path.join(path,corresponding_metablock))
+        for user in os.listdir(USRPATH):
+
+            if not os.path.isdir(os.path.join(USRPATH, user)):
+                continue 
+
+            dbpath = os.path.join(USRPATH, user)
+
+            for name in os.listdir(dbpath):
+                path = os.path.join(dbpath, name)
+                if os.path.isdir(path) and name != get_current_db_name():
+                    s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))
+                    if len(s) > 0:
+                        for indexo in range(len(s)):
+                            while not os.path.getsize(os.path.join(path,s[indexo])):
+                                corresponding_metablock_index = s[indexo].split('_')[-1]
+                                corresponding_metablock = 'sstable_metablock_' + corresponding_metablock_index
+                                os.remove(os.path.join(path,corresponding_metablock))
+                                os.remove(os.path.join(path,s[indexo]))
+                                s.pop(indexo) 
+                                break 
+                    if len(s) >= 2 and os.path.getsize(os.path.join(path,s[-1])) and os.path.getsize(os.path.join(path,s[-2])): 
+                        merge(path, s[-2], s[-1])
+                        corresponding_metablock_index = s[-1].split('_')[-1]
+                        corresponding_metablock = 'sstable_metablock_' + corresponding_metablock_index
+                        os.remove(os.path.join(path,s[-1]))
+                        os.remove(os.path.join(path,corresponding_metablock))
 
 
-        await asyncio.sleep(5)
+            await asyncio.sleep(5)
 
 
 if __name__ == '__main__':

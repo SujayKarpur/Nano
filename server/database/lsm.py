@@ -5,7 +5,7 @@ import os
 from server.database.memtable import Memtable
 from server.database.sstable import SSTable
 
-from server.env import FLUSH_SIZE, DATABASE_STORAGE_PATH
+from server.env import FLUSH_SIZE, STORAGE_PATH
 
 
 
@@ -18,8 +18,7 @@ def how_many_blocks(name: str) -> int:
     #3 - filter to include only 1 file per logical block 
     #4 - return the length of that list 
 
-    required_directory = os.path.join(DATABASE_STORAGE_PATH, name)
-    files_in_dir = os.listdir(required_directory)
+    files_in_dir = os.listdir(name)
     filtered_files = list(filter(lambda i : 'sstable_datablock_' in i, files_in_dir))
     return len(filtered_files)
 
@@ -34,13 +33,15 @@ class LSMTree:
     Implementation of a Log-Structured Merge Tree 
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, owner: str, name: str) -> None:
         """
         Initialize the LSM tree with the parameter `name`, which is the name of the database 
         """
+        self.owner = owner 
         self.name = name  
-        self.memtable = Memtable(self.name)
-        self.sstable = SSTable(self.name, how_many_blocks(self.name))
+        self.path = f'{STORAGE_PATH}/{self.owner}/databases/{name}'
+        self.memtable = Memtable(self.path)
+        self.sstable = SSTable(self.path, how_many_blocks(self.path))
 
     
     def startup(self) -> None:

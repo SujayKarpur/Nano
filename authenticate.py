@@ -7,7 +7,7 @@ from typing import Tuple
 from server import env
 
 
-USERS_FILE = f'{env.USER_STORAGE_PATH}/users.json'
+USERS_FILE = f'{env.STORAGE_PATH}/users.json'
 
 
 def signup(username: str, password: str) -> Tuple[bool, str]:
@@ -29,7 +29,7 @@ def signup(username: str, password: str) -> Tuple[bool, str]:
             json.dump({"default" + username : 4}, f)
 
         os.makedirs(f'{env.DATABASE_STORAGE_PATH}/{"default" + username}', exist_ok = True)
-        
+
         return (True, "SIGNED UP SUCCESSFULLY!!")
 
 

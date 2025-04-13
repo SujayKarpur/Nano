@@ -7,9 +7,10 @@ class Database:
     LSM Tree based key-value store 
     """
 
-    def __init__(self, name: str):
+    def __init__(self, owner: str, name: str):
         """ Initialize the database with its name """
-        self.db = LSMTree(name)
+        self.db = LSMTree(owner, name)
+        self.owner = owner 
         self.name = name 
         self.startup()
 

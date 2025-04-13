@@ -1,4 +1,0 @@
-nature
-defaultsky
-testdb
-defaultSujayKarpur

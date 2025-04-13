@@ -35,6 +35,7 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
             comlist = command.split()
 
             if not command:
+                stores.shutdown()
                 raise BrokenPipeError()
 
             username = get_current_username()
@@ -55,9 +56,23 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
 
             elif comlist[0] in ('exit', ''):
                 #stores.current.db.shutdown()
-                stores.cleanup()
+                stores.shutdown()
                 message = 'OK. Exiting Nano............\n'.encode()
                 print(f"Client {addr} left :(")
+
+
+
+            elif comlist[0] == 'LOGIN':
+                message = auth.login(comlist[1], comlist[2]).encode()
+
+
+            elif comlist[0] == 'LOGOUT':
+                message = auth.logout().encode()
+
+
+            elif comlist[0] == 'SIGNUP':
+                message = auth.signup(comlist[1], comlist[2]).encode()
+
 
             
             elif comlist[0] == 'SHARE':
@@ -83,9 +98,6 @@ async def handle_client(reader: asyncio.StreamReader, writer: asyncio.StreamWrit
                     message = f"OK. Granted user {share_to_user_uname} permission level {permission_level}".encode()
 
 
-
-            elif comlist[0] == 'LOGOUT':
-                auth.logout()
 
 
             elif comlist[0] == 'LIST':

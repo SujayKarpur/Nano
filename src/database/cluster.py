@@ -1,5 +1,5 @@
 from typing import List 
-from os import fsync, makedirs 
+from os import makedirs 
 from bisect import insort, bisect 
 import json 
 
@@ -37,7 +37,7 @@ class Cluster:
 
     def __init__(self) -> None: 
         """ Initialize the Cluster when the server starts running """
-        self.recover_from_crash()
+        self.startup()
         self.names: List[str] = list_of_databases()
         self.onames = self.names 
         self.delnames: List[str] = []
@@ -135,7 +135,7 @@ class Cluster:
 
         for i in self.names:
             if i == name:
-                self.current.db.shutdown()
+                self.current.shutdown()
                 self.current = Database(i)
                 set_current_db_name(i)
                 return f"OK. Selected database {i}"
@@ -143,14 +143,21 @@ class Cluster:
             return f"ERROR: No database {name} exists"
         
 
-    def cleanup(self) -> None:
-        self.current.db.shutdown()
+
+    def shutdown(self) -> None:
+
+        if self.current:
+            self.current.shutdown()
+
         with open(LIST_PATH, 'w') as f:
-            self.names = (set(self.names) | set(self.onames)) - self.delnames
+            self.names = (set(self.names) | set(self.onames)) - set(self.delnames)
             print('\n'.join(self.names), file = f) 
+
         self.wal.reset()
 
-    def recover_from_crash(self) -> None:
+
+
+    def startup(self) -> None:
         with open(LOG_PATH,'r') as f:
             lines = [i.rstrip('\n') for i in f.readlines()]
             databases = set()

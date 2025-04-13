@@ -36,49 +36,9 @@ def startup() -> None:
 
 
 async def main():
+
+
     startup()
-    
-    user_option = int(input('> '))
-
-    while user_option not in (1,2,3):
-        print("That is not a valid option")
-        print("Please enter a number between 1 and 3")
-        user_option = int(input('> '))
-
-    
-    if user_option == 2:
-        succ, ret = auth.signup(input('Enter your username: '), input('Enter your password: '))
-
-        if succ:
-            print(ret) 
-        else:
-            while not succ:
-                print(ret)
-                ans = input("Would you like to try again?\n")
-                if ans not in ('y', 'yes'):
-                    exit() 
-                succ, ret = auth.signup(input('Enter your username: '), input('Enter your password: '))
-            else:
-                print(ret)
-                print("To use Nano, run the client again and login with your new credentials")
-                exit()
-
-
-    
-    if user_option == 1:
-
-        username = input('Enter your username:  ')
-        password = input('Enter your password:  ')
-        token = auth.login(username, password)
-
-        if not token:
-            print("ERROR: Invalid username or password")
-        else:
-            print(f"Logged In successfully :) w token: {token}")
-
-
-    
-
     reader, writer = await asyncio.open_connection(env.HOST, env.PORT)
 
 
@@ -87,15 +47,21 @@ async def main():
         if command == 'help':
             help()
             continue  
-        else:
-            writer.write(command.encode())
-            await writer.drain()
-            output = await reader.read(1024)
-            print(output.decode())
-            if not output or not command or command == 'exit':
-                writer.close() 
-                await writer.wait_closed() 
-                break 
+
+        if command in ('LOGIN', 'SIGNUP'):
+            username = input('\nEnter your username: ')
+            password = input('Enter your password: ')
+            print()
+            command = command + ' ' + username + ' ' + password 
+
+        writer.write(command.encode())
+        await writer.drain()
+        output = await reader.read(1024)
+        print(output.decode())
+        if not output or not command or command == 'exit':
+            writer.close() 
+            await writer.wait_closed() 
+            break 
 
 
 

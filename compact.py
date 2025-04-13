@@ -41,9 +41,16 @@ def merge(path, file_1, file_2) -> None:
 
 
 async def compact() -> None:
-    while True: 
-        for name in os.listdir('./storage/databases'):
-            path = os.path.join('./storage/databases', name)
+
+    """
+    Concurrently 'compact' SSTables that are currently not in use to make storage/searching easier later 
+    """
+
+    DBPATH = './storage/databases'
+
+    while True:
+        for name in os.listdir(DBPATH):
+            path = os.path.join(DBPATH, name)
             if os.path.isdir(path) and name != get_current_db_name():
                 s = list(filter(lambda x : 'sstable_datablock' in x, os.listdir(path)))
                 if len(s) > 0:
@@ -63,8 +70,7 @@ async def compact() -> None:
                     os.remove(os.path.join(path,corresponding_metablock))
 
 
-        if __name__ != '__main__':
-            await asyncio.sleep(5)
+        await asyncio.sleep(5)
 
 
 if __name__ == '__main__':

@@ -6,7 +6,6 @@ import json
 import jwt 
  
 from server.database.database import Database
-from server.user.user import User 
 
 from server.statehandler import add_current_database, remove_current_database
 
@@ -36,7 +35,7 @@ class Cluster:
 
         self.token = token 
         self.username = jwt.decode(token, env.SECRET_KEY, algorithms=['HS256'])["username"] 
-        self.user = User(self.username)
+        #self.user = User(self.username)
 
 
         self.STORAGE_PATH = f'{env.STORAGE_PATH}/{self.username}'

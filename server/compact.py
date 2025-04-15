@@ -55,7 +55,6 @@ async def compact() -> None:
     
 
     while True:
-        print('hey')
         for user in os.listdir(USRPATH):
 
             if not os.path.isdir(os.path.join(USRPATH, user)):

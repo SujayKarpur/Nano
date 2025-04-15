@@ -114,9 +114,11 @@ class Cluster:
             self.current = Database(self.username, "default")
             return f"OK. Deleted database {name}"
 
-        if name not in self.names:
+        if name not in (self.names | self.shared_names):
             return f"ERROR: No database {name} exists"
         
+        if name not in self.names:
+            return f"ERROR: Permission Denied."
 
         self.names.pop(name)
 
